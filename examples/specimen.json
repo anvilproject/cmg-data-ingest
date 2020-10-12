@@ -1,0 +1,30 @@
+{
+  "resourceType": "Specimen",
+  "id": "18605",
+  "meta": {
+    "versionId": "3",
+    "lastUpdated": "2020-10-08T22:22:43.043+00:00",
+    "source": "#kXOfqWDSxTvbEfOR",
+    "profile": [ "http://hl7.org/fhir/StructureDefinition/Specimen" ]
+  },
+  "identifier": [ {
+    "system": "http://ncpi-api-dataservice.kidsfirstdrc.org/biospecimens?study_id=FAKE-CMG&external_aliquot_id=",
+    "value": "fd-sam1_1"
+  }, {
+    "system": "urn:ncpi:unique-string",
+    "value": "Specimen|FAKE-CMG|fd-sam1_1"
+  } ],
+  "subject": {
+    "reference": "Patient/18587"
+  },
+  "collection": {
+    "bodySite": {
+      "coding": [ {
+        "system": "https://uberon.github.io/",
+        "code": "UBERON:0001003",
+        "display": "skin epidermis"
+      } ],
+      "text": "skin epidermis"
+    }
+  }
+}

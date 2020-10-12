@@ -1,0 +1,49 @@
+{
+  "resourceType": "Condition",
+  "id": "18615",
+  "meta": {
+    "versionId": "3",
+    "lastUpdated": "2020-10-12T18:18:56.144+00:00",
+    "source": "#NbAJ7XxSodYmMljt",
+    "profile": [ "http://hl7.org/fhir/StructureDefinition/Condition" ]
+  },
+  "identifier": [ {
+    "system": "urn:ncpi:unique-string",
+    "value": "Condition|FAKE-CMG|FAKE-CMG|fd-fam1|1|Arthrogryposis, Distal, Type 1a"
+  } ],
+  "verificationStatus": {
+    "coding": [ {
+      "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+      "code": "confirmed",
+      "display": "Confirmed"
+    } ],
+    "text": "Affected"
+  },
+  "category": [ {
+    "coding": [ {
+      "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+      "code": "encounter-diagnosis",
+      "display": "Encounter Diagnosis"
+    } ]
+  } ],
+  "code": {
+    "coding": [ {
+      "system": "http://www.omim.org",
+      "code": "OMIM:108120",
+      "display": "Arthrogryposis, Distal, Type 1a"
+    } ],
+    "text": "Some random disease description"
+  },
+  "subject": {
+    "reference": "Patient/18587"
+  },
+  "onsetAge": {
+    "value": 19,
+    "unit": "a",
+    "system": "http://unitsofmeasure.org",
+    "code": "years"
+  },
+  "note": [ {
+    "text": "a phenotype description.  Other Disease IDs: ORPHA:1147 ( Sheldon-Hall syndrome )"
+  } ]
+}

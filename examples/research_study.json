@@ -1,0 +1,19 @@
+{
+  "resourceType": "ResearchStudy",
+  "id": "FAKE-CMG",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2020-09-21T19:30:32.711+00:00",
+    "source": "#Vvfu4uAtbTc1PkOq",
+    "profile": [ "http://hl7.org/fhir/StructureDefinition/ResearchStudy" ]
+  },
+  "identifier": [ {
+    "system": "https://ncpi-api-dataservice.kidsfirstdrc.org/studies?external_id=",
+    "value": "FAKE-CMG"
+  }, {
+    "system": "urn:ncpi:unique-string",
+    "value": "ResearchStudy|FAKE-CMG"
+  } ],
+  "title": "FAKE-CMG",
+  "status": "completed"
+}

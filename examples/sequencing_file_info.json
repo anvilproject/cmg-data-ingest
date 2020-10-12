@@ -1,0 +1,43 @@
+{
+  "resourceType": "Observation",
+  "id": "38908",
+  "meta": {
+    "versionId": "2",
+    "lastUpdated": "2020-10-08T22:22:44.117+00:00",
+    "source": "#viOOBIZpQx13NcaX",
+    "profile": [ "http://hl7.org/fhir/StructureDefinition/Observation" ]
+  },
+  "identifier": [ {
+    "system": "urn:ncpi:unique-string",
+    "value": "Observation|36722.merged.sorted.markeddups.realigned.recal"
+  } ],
+  "status": "final",
+  "subject": {
+    "reference": "Patient/18587",
+    "display": "1"
+  },
+  "focus": [ {
+    "reference": "DocumentReference/38888",
+    "display": "Sequence Data Filename"
+  } ],
+  "component": [ {
+    "code": {
+      "text": "Reference Genome Build"
+    },
+    "valueString": "hs37d5"
+  }, {
+    "code": {
+      "text": "Alignment Method"
+    },
+    "valueString": "bwa-0.7.10"
+  }, {
+    "code": {
+      "text": "Data Processing Pipeline"
+    },
+    "valueString": "3.0_DNA_Pipeline"
+  }, {
+    "valueBoolean": false
+  } ]
+}
+
+

@@ -1,0 +1,24 @@
+{
+  "resourceType": "ResearchSubject",
+  "id": "18596",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2020-09-30T18:50:42.805+00:00",
+    "source": "#vbkFGYbwJ1qhumSH",
+    "profile": [ "http://hl7.org/fhir/StructureDefinition/ResearchSubject" ]
+  },
+  "identifier": [ {
+    "system": "https://ncpi-api-dataservice.kidsfirstdrc.org/research_subjects?study_id=FAKE-CMG&external_id=",
+    "value": "FAKE-CMG|1"
+  }, {
+    "system": "urn:kids-first:unique-string",
+    "value": "ResearchSubject|FAKE-CMG|1"
+  } ],
+  "status": "on-study",
+  "study": {
+    "reference": "ResearchStudy/FAKE-CMG"
+  },
+  "individual": {
+    "reference": "Patient/18587"
+  }
+}

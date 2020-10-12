@@ -1,0 +1,33 @@
+{
+  "resourceType": "DocumentReference",
+  "id": "38888",
+  "meta": {
+    "versionId": "2",
+    "lastUpdated": "2020-10-08T22:22:43.869+00:00",
+    "source": "#HK6MiuV7JPGoGSvg",
+    "profile": [ "http://hl7.org/fhir/StructureDefinition/DocumentReference" ]
+  },
+  "identifier": [ {
+    "system": "urn:ncpi:unique-string",
+    "value": "DocumentReference|36722.merged.sorted.markeddups.realigned.recal"
+  } ],
+  "status": "current",
+  "subject": {
+    "reference": "Patient/18587",
+    "display": "1"
+  },
+  "date": "2016-05-26",
+  "author": [ {
+    "reference": "Organization/FD",
+    "display": "FD"
+  } ],
+  "description": "production of sequence data",
+  "content": [ {
+    "attachment": {
+      "title": "36722.merged.sorted.markeddups.realigned.recal.bam"
+    },
+    "format": {
+      "display": "Sequence Filename"
+    }
+  } ]
+}

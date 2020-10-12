@@ -1,0 +1,36 @@
+{
+  "resourceType": "Observation",
+  "id": "Observation.3.Mother.to.1",
+  "meta": {
+    "versionId": "6",
+    "lastUpdated": "2020-09-30T18:50:42.480+00:00",
+    "source": "#wUA0WCLFL0JR1KKO",
+    "profile": [ "http://hl7.org/fhir/StructureDefinition/Observation" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://snomed.info/sct",
+      "code": "35359004",
+      "display": "Family"
+    } ],
+    "text": "Family relationship"
+  },
+  "subject": {
+    "reference": "Patient/18589"
+  },
+  "focus": [ {
+    "reference": "Patient/18587"
+  } ],
+  "valueCodeableConcept": {
+    "coding": [ {
+      "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+      "code": "PRN",
+      "display": "parent"
+    }, {
+      "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+      "code": "MTH",
+      "display": "mother"
+    } ]
+  }
+}
