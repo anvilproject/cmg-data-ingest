@@ -78,7 +78,7 @@ class Disease:
             "id": get_target_id_from_record(Disease, record),
             "meta": {
                 "profile": [
-                    f"http://hl7.org/fhir/StructureDefinition/{Disease.resource_type}"
+                    f"http://fhir.ncpi-project-forge.io/StructureDefinition/ncpi-disease"
                 ]
             },
             "identifier": [
