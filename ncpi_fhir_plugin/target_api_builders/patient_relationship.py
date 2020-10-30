@@ -81,13 +81,13 @@ class PatientRelation:
             "id": make_identifier(PatientRelation.resource_type, participant_id, relationship, 'to', proband),
             "meta": {
                 "profile": [
-                    "http://hl7.org/fhir/StructureDefinition/Observation"
+                    "http://fhir.ncpi-project-forge.io/StructureDefinition/ncpi-family-relationship"
                 ]
             },
             "code": {
                 "coding": [
                   {
-                    "system": "http://terminology.hl7.org/CodeSystem/v3-FamilyMember",
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
                     "code": "FAMMEMB",
                     "display": "Family"
                   }
