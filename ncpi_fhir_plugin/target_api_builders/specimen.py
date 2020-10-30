@@ -32,10 +32,12 @@ class Specimen:
 
     @staticmethod
     def build_key(record):
+
+
         #assert None is not record[CONCEPT.PARTICIPANT.ID]
         assert None is not record[CONCEPT.BIOSPECIMEN.ID]
         return record.get(CONCEPT.BIOSPECIMEN.UNIQUE_KEY) or join(
-            record[CONCEPT.BIOSPECIMEN.ID]
+            record[CONCEPT.STUDY.ID], record[CONCEPT.BIOSPECIMEN.ID]
         )
 
     @staticmethod
@@ -52,6 +54,8 @@ class Specimen:
         sample_source =record.get(CONCEPT.BIOSPECIMEN.TISSUE_TYPE)
         sample_source_name = record.get(CONCEPT.BIOSPECIMEN.TISSUE_TYPE_NAME)
 
+        print(biospecimen_id)
+
         entity = {
             "resourceType": Specimen.resource_type,
             "id": get_target_id_from_record(Specimen, record),
@@ -67,7 +71,7 @@ class Specimen:
                 },
                 {
                     "system": "urn:ncpi:unique-string",
-                    "value": join(Specimen.resource_type, study_id, key),
+                    "value": join(Specimen.resource_type, key),
                 },
             ],
             "subject": {
