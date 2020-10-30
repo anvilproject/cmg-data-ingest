@@ -19,6 +19,7 @@ class SequencingFile:
     @staticmethod
     def build_key(record):
         assert None is not record[CONCEPT.SEQUENCING.ID]
+        assert None is not record[CONCEPT.SEQUENCING.DRS_URI]
 
         return record.get(CONCEPT.SEQUENCING_GENOMIC_FILE.UNIQUE_KEY) or join(
             record[CONCEPT.SEQUENCING_GENOMIC_FILE.ID]
@@ -33,13 +34,14 @@ class SequencingFile:
         seq_center = record.get(CONCEPT.SEQUENCING.CENTER.ID)
         specimen = get_target_id_from_record(Specimen, record)
         data_date_generation = record.get(CONCEPT.SEQUENCING.DATE)
+        drs_uri = record.get(CONCEPT.SEQUENCING.DRS_URI)
 
         entity = {
             "resourceType": SequencingFile.resource_type,
             "id": get_target_id_from_record(SequencingFile, record),
             "meta": {
                 "profile": [
-                    f"http://hl7.org/fhir/StructureDefinition/{SequencingFile.resource_type}"
+                    "http://fhir.ncpi-project-forge.io/StructureDefinition/ncpi-drs-document-reference"
                 ]
             },            
             "status": "current",
@@ -57,17 +59,14 @@ class SequencingFile:
             "identifier": [
                 {
                     "system": "urn:ncpi:unique-string",
-                    "value": join(SequencingFile.resource_type, seq_id),
+                    "value": join("ncpi-drs-document-reference", seq_id),
                 },
             ],
             "description": "production of sequence data",
         	"content": [
         		{
         			"attachment": {
-        				"title": seq_filename
-        			},
-        			"format": {
-        				"display": "Sequence Filename"
+        				"url": drs_uri
         			}
         		}
         	]
