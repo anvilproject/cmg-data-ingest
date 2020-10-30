@@ -30,6 +30,10 @@ class SequencingTask:
     def build_key(record):
         assert None is not record[CONCEPT.SEQUENCING.ID]
 
+        # I think it's safe to say that we'll need a DRS URI at this point
+        # we may switch to an alternate approach at a later date, though
+        assert None is not record[CONCEPT.SEQUENCING.DRS_URI]
+
         return record.get(CONCEPT.SEQUENCING.UNIQUE_KEY) or join(
             record[CONCEPT.SEQUENCING.ID]
         )
@@ -52,9 +56,15 @@ class SequencingTask:
         functional_equivalence_standard = record.get(CONCEPT.SEQUENCING.FUNCTIONAL_EQUIVALENCE_PIPELINE)
         data_date_generation = record.get(CONCEPT.SEQUENCING.DATE)
 
-        status = 'completed'
+        # In the event that our specimen ID doesn't work, let's see if it's under
+        # sample ID. This was used during some hurried push to get some messy 
+        # data into a fhir server, so it's probably no longer necessary. But, will
+        # need to be properly tested
+        # TODO - Make sure this is still sensible
+        if specimen is None:
+            specimen = get_target_id_from_record(Specimen, {CONCEPT.BIOSPECIMEN.ID: record[CONCEPT.PARTICIPANT.ID]})
 
-        print(f"{seq_id} : {specimen} : {record.get(CONCEPT.BIOSPECIMEN.ID)}")
+        status = 'completed'
 
         entity = {
             "resourceType": SequencingTask.resource_type,
