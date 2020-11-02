@@ -63,6 +63,10 @@ class Uberon:
 uberon = Uberon()
 
 class HPO:
+    misspelled = {
+        "HP:00030532" : "HP:0030532",
+        "HP:007737": "HP:0007737"
+    }
     filename = obo_path / "hp-full.obo"
 
     def __init__(self):
@@ -84,9 +88,14 @@ class HPO:
             print(f"{HPO.filename} not found. Unable to locally identify HP Codes")
             self.data = {}
 
-    def details(self, code):
-        name = self.data[code]
-        return Details(name, code, "https://uberon.github.io/")
+    def details(self, code = None):
+        thecode = code
+        if code in HPO.misspelled:
+            thecode = HPO.misspelled[code]
+
+        name = self.data[thecode]
+        return Details(name, thecode, "https://uberon.github.io/")
+
 hpo = HPO()
 
 class Omim:
