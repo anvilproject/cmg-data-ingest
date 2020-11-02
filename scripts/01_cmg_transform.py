@@ -58,7 +58,8 @@ class Transform:
             "Black or African American" : constants.RACE.BLACK,
             "American Indian or Alaskan Native": constants.RACE.NATIVE_AMERICAN,
             "Unknown": constants.COMMON.UNKNOWN,
-            'Other': constants.COMMON.OTHER
+            'Other': constants.COMMON.OTHER,
+            '': None
         },
         constants.GENDER : {
             "Intersex": constants.COMMON.OTHER,
@@ -81,31 +82,31 @@ class Transform:
 
     def CleanVar(constobj, val, default_to_empty=False):
         # Definitely want to get rid of whitespace
-        propname = val.strip().upper().replace(" ", "_")
-        try:
-            # This is just a way to verify that our data conforms to constants
-            # If it works, then we have our value. We'll take the extracted value
-            # so that case coming in doesn't have to match
-            propname = getattr(constobj, propname)
-            return propname
-        except AttributeError as e:
-            if default_to_empty:
-                return ""
-            # print(f"{Transform._alt_transforms[constobj]}")
-            # print(Transform._alt_transforms[constobj][val])
-            if val in Transform._alt_transforms[constobj]:
-                return Transform._alt_transforms[constobj][val]
-            # if this excepts, then we need to figure out what is going wrong
-            # Eventually, this will become it's own exception which can be handled
-            # nicely at the application layer
-            print(f"ugh: '{val}' supposedly isn't in {','.join(Transform._alt_transforms[constobj].keys())}")
-            print(Transform._alt_transforms[constobj])
-            print(val in Transform._alt_transforms[constobj])
-            raise e         
+
+        if val is not None:
+            propname = val.strip().upper().replace(" ", "_")
+            try:
+                # This is just a way to verify that our data conforms to constants
+                # If it works, then we have our value. We'll take the extracted value
+                # so that case coming in doesn't have to match
+                propname = getattr(constobj, propname)
+                return propname
+            except AttributeError as e:
+                if default_to_empty:
+                    return ""
+
+                if val in Transform._alt_transforms[constobj]:
+                    return Transform._alt_transforms[constobj][val]
+                # if this excepts, then we need to figure out what is going wrong
+                # Eventually, this will become it's own exception which can be handled
+                # nicely at the application layer
+                raise e         
+        return None
 
     def CleanSubjectId(var):
         # For now, just strip the character data from the strings
-        return var.replace("fd-sub", "")
+        return var
+        #return var.replace("fd-sub", "")
 
 class Disease:
     def __init__(self, row, family_lkup):
@@ -234,6 +235,10 @@ tissue_type_replacements = {
     "whole blood": "UBERON:0000178"
 }
 class Sample:
+    # We have some data that has been broken into 2 sets of files, which 
+    # we have to merge. Rather than deal with it outside, we'll just
+    # skip rows where the sample ID has already been opserved
+    observed = set()
     def __init__(self, row, family_lkup, subid_lkup):
         #print(row.keys())
         self.id = Transform.CleanSubjectId(row['subject_id']) #Transform.CleanSubjectId(row['subject_id'])
@@ -241,8 +246,13 @@ class Sample:
         self.sample_id = row['sample_id']
         self.dbgap_sample_id = row['dbgap_sample_id']
         self.sample_source = row['sample_source']
-        self.sample_provider = row['sequencing_center']
-        self.tissue_affected_status = Transform.CleanVar(constants.PHENOTYPE.OBSERVED, row['tissue_affected_status'])
+
+        if 'sequencing_center' in row:
+            self.sample_provider = row['sequencing_center']
+        else:
+            self.sample_provider = row['sample_provider']
+
+        self.tissue_affected_status = Transform.CleanVar(constants.PHENOTYPE.OBSERVED, row.get('tissue_affected_status'))
         
         if self.sample_source in tissue_type_replacements:
             self.sample_source = tissue_type_replacements[self.sample_source]
@@ -252,6 +262,7 @@ class Sample:
             self.sample_source_name = sample_details.name
 
         subid_lkup[self.sample_id] = self.id
+        Sample.observed.add(self.sample_id)
 
     @classmethod
     def write_default_header(cls, writer):
@@ -289,31 +300,73 @@ class Sample:
         ])
 
 class Sequencing:
+    file_cols = ['seq_filename',
+        'cram_path',
+        'crai_path', 
+        'vcf']
+
     def __init__(self, row, seq_centers, subj_id):
-        self.sample_id = row['sample_id']
+        self.sample_id = row.get('sample_id')
+
+        # a few of Broad's sequence entries don't have sample information associated with the
+        # sequence output...so, we have to extract it from the filename
+        if self.sample_id is None:
+            if 'cram_or_bam_path' in row:
+                self.sample_id = row['cram_or_bam_path'].split("/")[-1].split(".")[0]
+            else:
+                print("No sample IDs nor cram_or_bam_path")
+                sys.exit(1)
         try:
             self.subject_id = Transform.CleanSubjectId(row['subject_id']) #Transform.CleanSubjectId(row['subject_id'])
         except KeyError:
             self.subject_id = subj_id[self.sample_id]
-        self.seq_filename = row['seq_filename']
-        self.seq_file_type = self.seq_filename.split(".")[-1]
-        self.analyte_type = row['analyte_type']
-        self.sequencing_assay = row['sequencing_assay']
-        self.library_prep_kit_method = row['library_prep_kit_method']
-        self.exome_capture_platform = row['exome_capture_platform']
-        self.capture_region_bed_file = row['capture_region_bed_file']
-        self.reference_genome_build = row['reference_genome_build']
-        self.alignment_method = row['alignment_method']
-        self.data_processing_pipeline = row['data_processing_pipeline']
-        self.functional_equivalence_standard = Transform.CleanVar(constants.COMMON, row['functional_equivalence_standard'])
-        self.date_data_generation = ParseDate(row['date_data_generation'])
+        self.seq_filenames = []     
+
+        for col in Sequencing.file_cols:
+            if col in row:
+                # One of the broad's cmg datasets didn't have cram_path, but another had both
+                # cram_path and cram_or_bam...and we dont' want dupes
+                if row[col] not in self.seq_filenames:
+                    self.seq_filenames.append(row[col])
+
+        #self.seq_file_type = self.seq_filename.split(".")[-1]
+        if 'analyte_type' in row:
+            self.analyte_type = row.get('analyte_type')
+        elif 'data_type' in row:
+            self.analyte_type = row.get('data_type')
+        else:
+            self.analyte_type = None
+
+        self.sequencing_assay = row.get('sequencing_assay')
+        if 'data_type' in row:
+            self.sequencing_assay = row['data_type']
+        else:
+            self.sequencing_assay = None
+        self.library_prep_kit_method = row.get('library_prep_kit_method')
+        self.exome_capture_platform = row.get('exome_capture_platform')
+        self.capture_region_bed_file = row.get('capture_region_bed_file')
+        self.reference_genome_build = row.get('reference_genome_build')
+        self.alignment_method = row.get('alignment_method')
+        self.data_processing_pipeline = row.get('data_processing_pipeline')
+
+        self.functional_equivalence_standard = None
+        if 'functional_equivalence_standard' in row:
+            self.functional_equivalence_standard = Transform.CleanVar(constants.COMMON, row['functional_equivalence_standard'])
+        if 'date_data_generation' in row:
+            self.date_data_generation = ParseDate(row['date_data_generation'])
+        elif 'release_date' in row:
+            self.date_data_generation = ParseDate(row['release_date'])
+
         self.seq_center = None
 
         if self.sample_id:
-            self.seq_center = seq_centers[self.sample_id]
+            self.seq_center = seq_centers.get(self.sample_id)
 
         # for now, our sequencing id is just the file prefix
-        self.sequencing_id = ".".join(self.seq_filename.split(".")[0:-1])
+        self.sequencing_id = None
+
+        if len(self.seq_filenames) > 0:
+            self.sequencing_id = ".".join(self.seq_filenames[0].split(".")[0:-1])
 
     @classmethod
     def write_header(cls, writer):
@@ -323,6 +376,7 @@ class Sequencing:
             CONCEPT.SEQUENCING.ID,
             CONCEPT.SEQUENCING_GENOMIC_FILE.ID,
             CONCEPT.GENOMIC_FILE.FILE_FORMAT,
+            CONCEPT.SEQUENCING.DRS_URI,
             CONCEPT.SEQUENCING.CENTER.ID,
             CONCEPT.BIOSPECIMEN.ID,
             CONCEPT.BIOSPECIMEN.ANALYTE,
@@ -337,26 +391,31 @@ class Sequencing:
             CONCEPT.SEQUENCING.DATE
             ])
 
-    def write_row(self, study_name, writer):
-        writer.writerow([
-            study_name,
-            self.subject_id,
-            self.sequencing_id,
-            self.seq_filename,
-            self.seq_file_type,
-            self.seq_center,
-            self.sample_id,
-            self.analyte_type,
-            self.sequencing_assay,
-            self.library_prep_kit_method,
-            self.exome_capture_platform,
-            self.capture_region_bed_file,
-            self.reference_genome_build,
-            self.alignment_method,
-            self.data_processing_pipeline,
-            self.functional_equivalence_standard,
-            self.date_data_generation
-        ])
+    def write_row(self, study_name, writer, drs_ids):
+        for fn in self.seq_filenames:
+            drs_uri = drs_ids.get(fn.split("/")[-1])
+
+            file_type = fn.split(".")[-1]
+            writer.writerow([
+                study_name,
+                self.subject_id,
+                self.sequencing_id,
+                fn,
+                file_type,
+                drs_uri,
+                self.seq_center,
+                self.sample_id,
+                self.analyte_type,
+                self.sequencing_assay,
+                self.library_prep_kit_method,
+                self.exome_capture_platform,
+                self.capture_region_bed_file,
+                self.reference_genome_build,
+                self.alignment_method,
+                self.data_processing_pipeline,
+                self.functional_equivalence_standard,
+                self.date_data_generation
+            ])
 
 class Patient:
     def __init__(self, row, family_lkup, proband_relationships):
@@ -460,6 +519,16 @@ def Run(output, study_name, dataset, delim=None):
     # need to define that. 
     proband_relationships = collections.defaultdict(dict)           # parent_id => "relationship" => proband_id 
 
+    drs_ids = {}
+    if 'drs' in dataset:
+        with open(dataset['drs'], 'rt') as file:
+            reader = csv.DictReader(file, delimiter='\t', quotechar='"')
+
+            for row in reader:
+                locals = dict(zip(row['filenames'].split(","), row['object_id'].split(",")))
+                for fn in locals.keys():
+                    drs_ids[fn] = locals[fn]
+
     diseases = []
     with open(dataset['subject'], 'rt') as file:
         reader = csv.DictReader(file, delimiter=delim, quotechar='"')
@@ -504,10 +573,13 @@ def Run(output, study_name, dataset, delim=None):
             Sample.write_default_header(writer)
 
             for line in reader:
-                s = Sample(line, family_lkup, subj_id)
-                if s.sample_provider:
-                    seq_centers[s.sample_id] = s.sample_provider
-                s.write_row(study_name, writer)
+                # We skip over samples that exist twice--a side effect
+                # of concatting wgs onto the the wes data
+                if line['sample_id'] not in Sample.observed:
+                    s = Sample(line, family_lkup, subj_id)
+                    if s.sample_provider:
+                        seq_centers[s.sample_id] = s.sample_provider
+                    s.write_row(study_name, writer)
 
     with open(dataset['sequencing'], 'rt') as file:
         reader = csv.DictReader(file, delimiter=delim, quotechar='"')
@@ -518,7 +590,7 @@ def Run(output, study_name, dataset, delim=None):
 
             for row in reader:
                 seq = Sequencing(row, seq_centers, subj_id)
-                seq.write_row(study_name, writer)
+                seq.write_row(study_name, writer, drs_ids)
 
 if __name__ == "__main__":
     config = DataConfig.config()
@@ -542,7 +614,6 @@ if __name__ == "__main__":
     datasets = args.dataset 
     if len(datasets) == 0:
         datasets.append('FAKE-CMG')
-    print(datasets)
 
     for study in sorted(datasets):
         dirname = Path(f"{args.out}/{study}/transformed")
