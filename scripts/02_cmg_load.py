@@ -27,8 +27,9 @@ if __name__ == "__main__":
         "sequencing_center",
         "sequencing_file",
         "sequencing_data",           # This will eventually change to sequencing_task
-        "sequencing_file_info"
     ]
+    """ For now, we'll leave these off. None of those fields mapped well anyway
+        "sequencing_file_info"  """
     config = DataConfig.config()
     env_options = config.list_environments()
     ds_options = config.list_datasets()
