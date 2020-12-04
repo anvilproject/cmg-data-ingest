@@ -33,7 +33,6 @@ def test_specimen_details(study, transformed_dir):
             if relationship:
             	proband = patients[proband_id]
             	parents = proband.parents()
-            	print(parents)
             	if relationship == constants.RELATIONSHIP.MOTHER:
             		parent = parents['MTH']
             		assert subject_id == parent.subject_id, "Verify that the mother's ID matches"
