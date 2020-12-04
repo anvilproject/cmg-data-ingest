@@ -33,7 +33,6 @@ class Specimen:
     @staticmethod
     def build_key(record):
 
-
         #assert None is not record[CONCEPT.PARTICIPANT.ID]
         assert None is not record[CONCEPT.BIOSPECIMEN.ID]
         return record.get(CONCEPT.BIOSPECIMEN.UNIQUE_KEY) or join(
@@ -53,8 +52,6 @@ class Specimen:
         volume_ul = record.get(CONCEPT.BIOSPECIMEN.VOLUME_UL)
         sample_source =record.get(CONCEPT.BIOSPECIMEN.TISSUE_TYPE)
         sample_source_name = record.get(CONCEPT.BIOSPECIMEN.TISSUE_TYPE_NAME)
-
-        print(biospecimen_id)
 
         entity = {
             "resourceType": Specimen.resource_type,
