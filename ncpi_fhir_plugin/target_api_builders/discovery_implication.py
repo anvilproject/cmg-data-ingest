@@ -10,6 +10,10 @@ from ncpi_fhir_plugin.common import constants, CONCEPT, add_loinc_coding
 from ncpi_fhir_plugin.target_api_builders.specimen import Specimen
 from ncpi_fhir_plugin.target_api_builders.discovery_variant import DiscoveryVariant
 
+from fhirwood.reference import Reference
+from fhirwood.coding import Coding
+from fhirwood.identifier import Identifier
+
 class DiscoveryImplication:
     class_name = "discovery_implication"
     resource_type = "Observation"
@@ -47,60 +51,47 @@ class DiscoveryImplication:
                      f"http://hl7.org/fhir/StructureDefinition/{DiscoveryImplication.resource_type}"
                 ]
             },
-            "identifier": [
-                {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(DiscoveryVariant.resource_type, key),
-                }
-            ],
+            "identifier": Identifier(
+                    system="urn:ncpi:unique-string",
+                    value=join(DiscoveryVariant.resource_type, key),
+                    is_list=True).as_obj(),
             "status": "final",
-            "category" : [
+            "category" : [ 
                 {
-                    "coding" : [
-                        {
-                            "system" : "http://terminology.hl7.org/CodeSystem/observation-category",
-                            "code" : "laboratory"
-                        }
-                    ]
+                    "coding" : Coding(
+                            system="http://terminology.hl7.org/CodeSystem/observation-category", 
+                            code="laboratory", 
+                            is_list=True).as_obj() 
                 }
             ],
             "code":     {
-                "coding": [
-                    {
-                        "system": "http://hl7.org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes",
-                        "code": "diagnostic-implication",
-                        "display": "Diagnostic Implication"
-                    }
-                ]
+                "coding": Coding(
+                            system="http://hl7.org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes",
+                            code="diagnostic-implication",
+                            display="Diagnostic Implication",
+                            is_list=True).as_obj()
             },
-            "specimen": {
-                "reference": f"{Specimen.resource_type}/{biospecimen_id}",
-                "display" : "Specimen"
-            },
-            "derivedFrom": [
-                {
-                    "reference": f"{DiscoveryVariant.resource_type}/{get_target_id_from_record(DiscoveryVariant, record)}"
-                }
+            "specimen": Reference(
+                            ref=f"{Specimen.resource_type}/{biospecimen_id}", 
+                            display="Specimen").as_obj(),
+            "derivedFrom": [ 
+                Reference(ref=f"{DiscoveryVariant.resource_type}/{get_target_id_from_record(DiscoveryVariant, record)}").as_obj()
             ],
             "component": [ 
                 {
                     "code" : {
-                            "coding" : [
-                                {
-                                    "system" : "http://hl7.org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes",
-                                    "code" : "mode-of-inheritance",
-                                    "display" : "mode-of-inheritance"
-                                }
-                            ]
+                            "coding" : Coding(
+                                    system="http://hl7.org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes",
+                                    code="mode-of-inheritance",
+                                    display="mode-of-inheritance",
+                                    is_list=True).as_obj()
                         },
                         "valueCodeableConcept" : {
-                        "coding" : [
-                            {
-                                "system" : "http://ghr.nlm.nih.gov/primer/inheritance/inheritancepatterns",
-                                "code" : inheritance,
-                                "display" : inheritance
-                            }
-                        ]
+                        "coding" : Coding(
+                                system="http://ghr.nlm.nih.gov/primer/inheritance/inheritancepatterns",
+                                code=inheritance,
+                                display=inheritance,
+                                is_list=True).as_obj()
                     }
                 }
             ]
@@ -110,13 +101,11 @@ class DiscoveryImplication:
             entity['component'].append(
                 {
                     "code": {
-                        "coding": [
-                            {
-                                "system": "http://loinc.org",
-                                "code": "53037-8",
-                                "display": "Genetic variation clinical significance [Imp]"
-                            }
-                        ]
+                        "coding": Coding(
+                                system="http://loinc.org",
+                                code="53037-8",
+                                display= "Genetic variation clinical significance [Imp]",
+                                is_list=True).as_obj()
                     },
                     "valueCodeableConcept": add_loinc_coding(signif)
                 }
