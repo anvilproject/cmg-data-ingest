@@ -48,7 +48,7 @@ CONCEPT.STUDY.PROVIDER = SampleProvider
 class TissueStatus(PropertyMixin):
 	NAME = "BIOSPECIMEN|TISSUE|AFFECTED_STATUS"
 
-class AffectedStatus:
+class AffectedStatus(PropertyMixin):
 	AFFECTED = "Affected"
 	UNAFFECTED = "Unaffected"
 	POSSIBLY_AFFECTED = "Possibly affected"
@@ -62,7 +62,123 @@ constants.AFFECTED_STATUS = AffectedStatus
 constants.PHENOTYPE.OBSERVED.PRESENT = "Present"
 constants.PHENOTYPE.OBSERVED.ABSENT = "Absent"
 
+class DISCOVERY(PropertyMixin):
+	class GENE(PropertyMixin):
+		GENE_CLASS = None
+		GENE_CODE = None		# Human readable gene 'symbol'
+		GENE_SYSTEM = None		# Used in FHIR for system id, so URL/URI for terminology source
+
+	class VARIANT(PropertyMixin):
+		INHERITANCE = None
+		ZYGOSITY = None
+		GENOME_BUILD = None
+
+		CHROM = None
+		POS = None
+		REF = None
+		ALT = None
+		HGVSC = None
+		HGVSP = None
+		TRANSCRIPT = None
+		SV_NAME = None
+		SV_TYPE = None
+		SIGNIFICANCE = None
+
+		class VARIANT_REPORT(PropertyMixin):
+			VARIANTS = None
+
+
+CONCEPT.DISCOVERY = DISCOVERY
+
+class DiscoveryConstants:
+	class GENE:
+		class GENE_CLASS:
+			KNOWN = "Known"
+			Tier1 = "Tier1"
+			Tier2 = "Tier2"
+	class VARIANT:
+		class ZYGOSITY:
+			HETEROZYGOUS = "Heterozygous"
+			HOMOZYGOUS = "Homozygous"
+			HEMIZYGOUS = "Hemizygous"
+			HETEROPLASMIC = "Heteroplasmic"
+			HOMOPLASMIC = "Homoplasmic"
+		class GENOME_BUILD:
+			NCBI34 = "NCBI34"
+			NCBI35 = "NCBI35"
+			NCBI36 = "NCBI36"
+			GRCh37 = "GRCh37"
+			GRCh38 = "GRCh38"
+		class SV_TYPE:
+			DELETION = "Deletion"
+			DUPLICATION = "Duplication"
+			MULTIALLELIC_CNV = "Multiallelic CNV"
+			INSERTION = "Insertion"
+			INVERSION = "Inversion"
+			COMPLEX_SVS = "Complex SVs"
+		class SIGNIFICANCE:
+			BENIGN = "Benign"
+			LIKELY_BENIGN = "Likely benign"
+			UNCERTAIN_SIGNIFICANCE = "Uncertain significance"
+			SUSPECTED_PATHOGENIC = "Suspectedpathogenic"
+			LIKELY_PATHOGENIC = "Likely pathogenic"
+			PATHOGENIC = "Pathogenic"
+		class INHERITANCE:
+			DE_NOVO = "de novo"
+			AUTOSOMAL_RECESSIVE_HOMOZYGOUS = "Autosomal recessive (homozygous)"
+			AUTOSOMAL_RECESSIVE_COMPOUND_HETERO = "Autosomal recessive (compound heterozygous)"
+			AUTOSOMAL_DOMINANT = "Autosomal dominant"
+			X_LINKED = "X-linked"
+			MITOCHONDRIAL = "Mitochondrial"
+			Y_LINKED = "Y-linked"
+			CONTIGUOUS_GENE_SYNDROME = "Contiguous gene syndrome"
+			SOMATIC_MOSAICISM = "Somatic mosaicism"
+constants.DISCOVERY = DiscoveryConstants
 concept_property_set=compile_schema()
+
+#https://fhir.loinc.org/ValueSet/LL381-5   	-- Zygosity
+#https://fhir.loinc.org/ValueSet/LL1040-6	-- Genome Builds
+#https://loinc.org/LL4033-8/				-- structure variant types
+
+# 	CONCEPT.DISCOVERY.VARIANT.SV_TYPE.MULTIALLELIC_CNV: '',
+LOINC_LOOKUP = {
+	constants.DISCOVERY.VARIANT.ZYGOSITY.HETEROZYGOUS: 'LA6706-1',
+	constants.DISCOVERY.VARIANT.ZYGOSITY.HOMOZYGOUS: 'LA6705-3',
+	constants.DISCOVERY.VARIANT.ZYGOSITY.HEMIZYGOUS: 'LA6707-9',
+	constants.DISCOVERY.VARIANT.ZYGOSITY.HETEROPLASMIC: 'LA6703-8',
+	constants.DISCOVERY.VARIANT.ZYGOSITY.HOMOPLASMIC: 'LA6704-6',
+	constants.DISCOVERY.VARIANT.GENOME_BUILD.NCBI34: 'LA14032-9',
+	constants.DISCOVERY.VARIANT.GENOME_BUILD.NCBI35: 'LA14031-1',
+	constants.DISCOVERY.VARIANT.GENOME_BUILD.NCBI36: 'LA14030-3',
+	constants.DISCOVERY.VARIANT.GENOME_BUILD.GRCh37: 'LA14029-5',
+	constants.DISCOVERY.VARIANT.GENOME_BUILD.GRCh38: 'LA26806-2',
+	constants.DISCOVERY.VARIANT.SV_TYPE.DELETION: 'LA6692-3',
+	constants.DISCOVERY.VARIANT.SV_TYPE.DUPLICATION: 'LA6686-5',
+	constants.DISCOVERY.VARIANT.SV_TYPE.INSERTION: 'LA6687-3',
+	constants.DISCOVERY.VARIANT.SV_TYPE.INVERSION: 'LA6689-9',
+	constants.DISCOVERY.VARIANT.SV_TYPE.COMPLEX_SVS: 'LA26330-3',
+	constants.DISCOVERY.VARIANT.SIGNIFICANCE.BENIGN: 'LA6675-8',
+	constants.DISCOVERY.VARIANT.SIGNIFICANCE.LIKELY_BENIGN: 'LA6674-1',	# Presumed Benign
+	constants.DISCOVERY.VARIANT.SIGNIFICANCE.UNCERTAIN_SIGNIFICANCE: 'LA6682-4', #Unknown Significance
+	constants.DISCOVERY.VARIANT.SIGNIFICANCE.SUSPECTED_PATHOGENIC: 'LA6669-1',	# Exactly how does suspected and likely differ?
+	constants.DISCOVERY.VARIANT.SIGNIFICANCE.LIKELY_PATHOGENIC: 'LA6669-1',
+	constants.DISCOVERY.VARIANT.SIGNIFICANCE.PATHOGENIC: 'LA6668-3'
+}
+def add_loinc_coding(value, name = None):
+	loinc_code = LOINC_LOOKUP[value]
+	if name is None:
+		name = value
+
+	return {
+        "coding": [ 
+            {
+                "system": "http://loinc.org",
+                "code": loinc_code,
+                "display": value
+            }
+        ],
+        "text": name
+	}
 
 terminology = {
 	# https://www.hl7.org/fhir/valueset-observation-interpretation.html
@@ -110,5 +226,4 @@ terminology = {
 	        "text": "Present"
 	    },
 	}
-	
 }
