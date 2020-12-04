@@ -8,7 +8,6 @@ import csv
 from ncpi_fhir_plugin.common import CONCEPT, constants
 
 from pathlib import Path
-import collections
 import sys
 
 from yaml import load, FullLoader
@@ -16,8 +15,13 @@ from yaml import load, FullLoader
 from term_lookup import pull_details, write_cache
 import term_lookup
 from fhir_walk.config import DataConfig 
+from genenames import Gene
 
 from argparse import ArgumentParser, FileType
+
+from variant_details import get_variant
+
+from collections import defaultdict
 
 def ParseDate(value):
     # 20160525  -- May need to test for "-" and "/" or other characters
@@ -79,7 +83,6 @@ class Transform:
         }
     }
 
-
     def CleanVar(constobj, val, default_to_empty=False):
         # Definitely want to get rid of whitespace
 
@@ -107,6 +110,137 @@ class Transform:
         # For now, just strip the character data from the strings
         return var
         #return var.replace("fd-sub", "")
+"""
+class DiscoveryImplication:
+    def __init__(self, row, variants):
+        self.id = Transform.CleanSubjectId(row['subject_id']) # Transform.CleanSubjectId(row['subject_id'])
+        self.sample_id = row['sample_id']
+        self.inheritance = row['inheritance_description']
+        self.hgvsc = row['hgvsc']
+        self.hgvsp = row['hgvsp']
+        self.transcript = row['transcript']
+
+
+    @classmethod
+    def writeheader(cls, writer):
+        writer.writerow([
+            CONCEPT.PARTICIPANT.ID,
+            CONCEPT.STUDY.NAME,
+            CONCEPT.BIOSPECIMEN.ID,
+            CONCEPT.DISCOVERY.VARIANT.ID,
+            CONCEPT.DISCOVERY.VARIANT.INHERITANCE    
+        ])   
+
+    def writerow(self, writer, study_name):
+        writer.writerow([
+            self.id,
+            study_name,
+            self.sample_id,
+            self.inheritance
+        ])
+"""
+class DiscoveryVariant:
+    genome_builds = {
+        'hs37d5': 'GRCh37',
+        'GRCh38DH': 'GRCh38'
+    }
+    def __init__(self, row):
+        self.id = Transform.CleanSubjectId(row['subject_id']) # Transform.CleanSubjectId(row['subject_id'])
+        self.sample_id = row['sample_id']
+        self.gene = row['gene']
+        self.gene_class = row['gene_class']
+        self.gene_code = self.gene
+        self.zygosity = row['zygosity']
+
+        # Some of the genes are done weirdly, so we'll try and fix them now:
+        if ":" in self.gene:
+            self.gene, tier = self.gene.split(":")
+            if self.gene_class == "Candidate":
+                self.gene_class = f"{tier} - Candidate"
+
+        if 'variant_genome_build' in row:
+            self.ref_seq = row['variant_genome_build']
+        else:
+            self.ref_seq = DiscoveryVariant.genome_builds[Sequencing.genome_builds[self.sample_id]]
+        self.chrom = row['chrom']
+        self.pos = row['pos']
+        self.ref = row['ref']
+        self.alt = row['alt']
+        self.hgvsc = row['hgvsc']
+        self.hgvsp = row['hgvsp']
+        self.transcript = row['transcript']
+        self.sv_name = row['sv_name']
+        self.sv_type = row['sv_type']
+        self.significance = row['significance']
+        self.variant_id = f"{self.chrom}|{self.pos}|{self.ref}|{self.alt}"
+
+        if self.gene:
+            gene = Gene.get_gene(self.gene)
+            if gene:
+                self.gene_code = gene.id
+
+        # if we do get a variant, the ID can be used to construct a URL for clinvar entry, which 
+        # may be quite informative
+        if self.variant_id is None:
+            print(f"Get Variant returned nothing: {self.hgvsc} : {self.hgvsp} : {self.transcript}")
+            sys.exit(1)
+        self.variant = get_variant(self.hgvsc, self.transcript)
+
+        self.inheritance = row['inheritance_description']
+
+    def add_variant_ids(self, variant_lkup):
+        variant_lkup[self.id].append(f"{self.variant_id}+{self.sample_id}")
+        if self.inheritance and self.inheritance.strip() != "":
+            variant_lkup[self.id].append(f"{self.variant_id}+{self.sample_id}+{self.inheritance}")
+
+    def writerow(self, writer, study_name):
+        writer.writerow([
+            self.id,
+            study_name,
+            self.sample_id,
+            self.variant_id,
+            self.gene,
+            self.gene_class,
+            self.gene_code,
+            self.ref_seq,
+            self.chrom,
+            self.pos,
+            self.ref,
+            self.alt,
+            self.zygosity,
+            self.hgvsc,
+            self.hgvsp,
+            self.transcript,
+            self.sv_name,
+            self.sv_type,
+            self.significance,
+            self.inheritance
+        ])
+
+    @classmethod
+    def writeheader(cls, writer):
+        writer.writerow([
+            CONCEPT.PARTICIPANT.ID,
+            CONCEPT.STUDY.ID,
+            CONCEPT.BIOSPECIMEN.ID,
+            CONCEPT.DISCOVERY.VARIANT.ID,
+            CONCEPT.DISCOVERY.GENE.ID,
+            CONCEPT.DISCOVERY.GENE.GENE_CLASS,
+            CONCEPT.DISCOVERY.GENE.GENE_CODE,
+            CONCEPT.DISCOVERY.VARIANT.GENOME_BUILD,
+            CONCEPT.DISCOVERY.VARIANT.CHROM,
+            CONCEPT.DISCOVERY.VARIANT.POS,
+            CONCEPT.DISCOVERY.VARIANT.REF,
+            CONCEPT.DISCOVERY.VARIANT.ALT,
+            CONCEPT.DISCOVERY.VARIANT.ZYGOSITY,
+            CONCEPT.DISCOVERY.VARIANT.HGVSC,
+            CONCEPT.DISCOVERY.VARIANT.HGVSP,
+            CONCEPT.DISCOVERY.VARIANT.TRANSCRIPT,
+            CONCEPT.DISCOVERY.VARIANT.SV_NAME,
+            CONCEPT.DISCOVERY.VARIANT.SV_TYPE,
+            CONCEPT.DISCOVERY.VARIANT.SIGNIFICANCE,
+            CONCEPT.DISCOVERY.VARIANT.INHERITANCE    
+        ])
 
 class Disease:
     def __init__(self, row, family_lkup):
@@ -158,6 +292,8 @@ class Disease:
         self.disease_name = primary_details.name
         self.disease_system = primary_details.system
         self.alternate_disease_names = " | ".join(alternate_details)
+
+
 
     @classmethod
     def hpo_write_header(cls, writer):
@@ -305,6 +441,9 @@ class Sequencing:
         'crai_path', 
         'vcf']
 
+    # We need this in case the build isn't part of the discovery data
+    genome_builds = {}      # sample_id => reference sequence
+
     def __init__(self, row, seq_centers, subj_id):
         self.sample_id = row.get('sample_id')
 
@@ -367,6 +506,8 @@ class Sequencing:
 
         if len(self.seq_filenames) > 0:
             self.sequencing_id = ".".join(self.seq_filenames[0].split(".")[0:-1])
+
+        Sequencing.genome_builds[self.sample_id] = self.reference_genome_build
 
     @classmethod
     def write_header(cls, writer):
@@ -517,7 +658,7 @@ def Run(output, study_name, dataset, delim=None):
 
     # There is currently no reference to the proband from parent rows, so we 
     # need to define that. 
-    proband_relationships = collections.defaultdict(dict)           # parent_id => "relationship" => proband_id 
+    proband_relationships = defaultdict(dict)           # parent_id => "relationship" => proband_id 
 
     drs_ids = {}
     if 'drs' in dataset:
@@ -591,6 +732,32 @@ def Run(output, study_name, dataset, delim=None):
             for row in reader:
                 seq = Sequencing(row, seq_centers, subj_id)
                 seq.write_row(study_name, writer, drs_ids)
+
+    with open(dataset['discovery'], 'rt') as file:
+        reader = csv.DictReader(file, delimiter=delim, quotechar='"')
+
+        # subject_id => [variant_id, ...]
+        variants = defaultdict(list)
+        with open(output / "discovery_variant.tsv", 'wt') as outf:
+            writer = csv.writer(outf, delimiter='\t', quotechar='"')
+            DiscoveryVariant.writeheader(writer)
+
+            for row in reader:
+                var = DiscoveryVariant(row)
+                var.writerow(writer, study_name)
+                var.add_variant_ids(variants)
+
+
+        with open(output / "discovery_report.tsv", 'wt') as outf:
+            writer = csv.writer(outf, delimiter='\t', quotechar='"')
+            writer.writerow([
+                    CONCEPT.STUDY.ID,
+                    CONCEPT.PARTICIPANT.ID,
+                    CONCEPT.DISCOVERY.VARIANT.ID
+            ])
+
+            for id in variants.keys():
+                writer.writerow([study, id, "::".join(variants[id])])
 
 if __name__ == "__main__":
     config = DataConfig.config()

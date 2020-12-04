@@ -3,6 +3,7 @@
 import sys
 import logging
 from pathlib import Path
+from time import sleep
 
 from yaml import load, FullLoader
 from kf_lib_data_ingest.common.io import read_df
@@ -26,7 +27,11 @@ if __name__ == "__main__":
         "tissue_affected_status",
         "sequencing_center",
         "sequencing_file",
+        "sequencing_file_no_drs",
         "sequencing_data",           # This will eventually change to sequencing_task
+        "discovery_variant",
+        "discovery_implication",
+        "discovery_report"
     ]
     """ For now, we'll leave these off. None of those fields mapped well anyway
         "sequencing_file_info"  """
@@ -57,17 +62,11 @@ if __name__ == "__main__":
     list_of_class_names_to_load = args.modules_to_load
     if len(list_of_class_names_to_load) == 0:
         list_of_class_names_to_load = all_loadable_classes
-    print(list_of_class_names_to_load)
 
-    print(f"Setting host to {args.env}")
     fhir_host = config.set_host(args.env)
-    print(fhir_host)
     datasets = args.dataset 
     if len(datasets) == 0:
         datasets.append('FAKE-CMG')
-
-    print(f"Using the environment, {args.env}")
-    print(f"Datasets: {','.join(datasets)}")
 
     path_to_my_target_service_plugin = "ncpi_fhir_plugin/fhir_plugin.py"
     target_service_base_url = fhir_host.target_service_url
@@ -89,9 +88,9 @@ if __name__ == "__main__":
         disease = read_df(f'{input_file_dir}/disease.tsv')
         hpo = read_df(f'{input_file_dir}/hpo.tsv')
         sequencing_data = read_df(f'{input_file_dir}/sequencing.tsv')
+        discovery_variant = read_df(f"{input_file_dir}/discovery_variant.tsv") 
+        discovery_report = read_df(f"{input_file_dir}/discovery_report.tsv")
 
-        print("Here is the auth config")
-        print(FhirHost.host())
         outcome = LoadStage(
             path_to_my_target_service_plugin,
             target_service_base_url,
@@ -111,12 +110,20 @@ if __name__ == "__main__":
                 'human_phenotype': hpo,
                 'sequencing_file': sequencing_data,
                 'sequencing_data': sequencing_data,
-                "sequencing_file_info": sequencing_data
+                "sequencing_file_info": sequencing_data,
+                "discovery_variant": discovery_variant,
+                "discovery_implication": discovery_variant,
+                "discovery_report": discovery_report
             })
         logger = logging.getLogger(__name__)
+        sleep(1)
+
         if outcome:
+            print("I think it all worked")
             logger.info("✅ Ingest pipeline passed validation!")
         else:
+            print("Something seemed to go wrong!")
+            print(outcome)
             logger.error(
                 "❌ Ingest pipeline failed validation! "
                 f"See logs/load.log for details"

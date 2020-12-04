@@ -45,6 +45,35 @@ broken_terms = {
     '': ''
 }       # ID => 
 
+class Gene:
+    filename = obo_path / "hgnc_complete_set.tsv"
+
+    # For now, we'll just track symbols => id 
+    def __init__(self): 
+        self.hgnc = {}
+
+        with open(Gene.filename) as f:
+            reader = csv.DictReader(f, delimiter='\t', quotechar='"')
+
+            for line in reader:
+                hgncid = line['hgnc_id']
+                self.hgnc[line['symbol']] = hgncid
+
+                aliases = line['alias_symbol']
+                if aliases and aliases != "":
+                    for symbol in aliases.split("|"):
+                        self.hgnc[symbol] = hgncid
+
+                aliases  = line['prev_symbol']
+                if aliases and aliases != "":
+                    for symbol in aliases.split("|"):
+                        self.hgnc[symbol] = hgncid
+
+        def details(self, code):
+            if code in self.hgnc:
+                hgncid = self.hgnc[code]
+                return Details(hgncid, code, "http://www.genenames.org/geneId")
+
 class Uberon:
     filename = obo_path / "uberon.obo"
 
