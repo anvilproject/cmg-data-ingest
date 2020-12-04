@@ -21,14 +21,7 @@ class DiscoveryReport:
         assert None is not record[CONCEPT.STUDY.ID]
         assert None is not record[CONCEPT.PARTICIPANT.ID]
         assert None is not record[CONCEPT.DISCOVERY.VARIANT.ID]
-        print(f"ASDF: {record[CONCEPT.STUDY.ID]} {record[CONCEPT.PARTICIPANT.ID]}")
 
-        the_key = record.get(CONCEPT.DISCOVERY.VARIANT.VARIANT_REPORT.TARGET_SERVICE_ID) or join(
-            record[CONCEPT.STUDY.ID],
-            record[CONCEPT.PARTICIPANT.ID]
-        )
-
-        print(f"And the key is: {the_key}\n\n")
         return record.get(CONCEPT.DISCOVERY.VARIANT.VARIANT_REPORT.TARGET_SERVICE_ID) or join(
             record[CONCEPT.STUDY.ID],
             record[CONCEPT.PARTICIPANT.ID]
@@ -38,9 +31,6 @@ class DiscoveryReport:
     def build_entity(record, key, get_target_id_from_record):
         study_id = record[CONCEPT.STUDY.ID]
         patient_id = record[CONCEPT.PARTICIPANT.ID]
-        print(f"{study_id}|{patient_id} -- {record[CONCEPT.DISCOVERY.VARIANT.ID]}")
-
-        print(f"Getting the ID FOR {study_id}|{patient_id} -> {get_target_id_from_record(DiscoveryReport, record)}")
 
         entity = {
             "resourceType": DiscoveryReport.resource_type,
