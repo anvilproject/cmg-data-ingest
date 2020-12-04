@@ -19,7 +19,7 @@ class SequencingFile:
     @staticmethod
     def build_key(record):
         assert None is not record[CONCEPT.SEQUENCING.ID]
-        assert None is not record[CONCEPT.SEQUENCING.DRS_URI]
+        assert None is not record[CONCEPT.SEQUENCING.DRS_URI] and record[CONCEPT.SEQUENCING.DRS_URI] != ""
 
         return record.get(CONCEPT.SEQUENCING_GENOMIC_FILE.UNIQUE_KEY) or join(
             record[CONCEPT.SEQUENCING_GENOMIC_FILE.ID]
