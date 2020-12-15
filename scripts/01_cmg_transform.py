@@ -83,8 +83,14 @@ class Transform:
         }
     }
 
-    def CleanVar(constobj, val, default_to_empty=False):
+    _raw_chroms = [str(x) for x in range(1,23)] + ['X', 'Y']
+
+    def CleanVar(constobj, rawval, default_to_empty=False):
         # Definitely want to get rid of whitespace
+        val = rawval
+        if constobj == constants.DISCOVERY.VARIANT.CHROMOSOME:
+            if val in Transform._raw_chroms:
+                val = f"Chr{val}"
 
         if val is not None:
             propname = val.strip().upper().replace(" ", "_")
@@ -162,7 +168,7 @@ class DiscoveryVariant:
             self.ref_seq = row['variant_genome_build']
         else:
             self.ref_seq = DiscoveryVariant.genome_builds[Sequencing.genome_builds[self.sample_id]]
-        self.chrom = row['chrom']
+        self.chrom = Transform.CleanVar(constants.DISCOVERY.VARIANT.CHROMOSOME, row['chrom'])
         self.pos = row['pos']
         self.ref = row['ref']
         self.alt = row['alt']
