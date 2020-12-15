@@ -178,9 +178,7 @@ class DiscoveryVariant:
                             }
                         ]
                     },
-                    "valueCodeableConcept" : {
-                        "text" : chrom
-                    }
+                    "valueCodeableConcept" : add_loinc_coding(chrom)
                 }
             )
 
