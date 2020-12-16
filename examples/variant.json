@@ -67,7 +67,12 @@
       } ]
     },
     "valueCodeableConcept": {
-      "text": "1"
+      "coding": [ {
+        "system": "http://loinc.org",
+        "code": "LA21254-0",
+        "display": "Chr1"
+      } ],
+      "text": "Chr1"
     }
   }, {
     "code": {
