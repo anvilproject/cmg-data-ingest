@@ -29,7 +29,12 @@ def write_cache():
 
         for term_type in sorted(cache.keys()):
             for term in sorted(cache[term_type].keys()):
-                cache[term_type][term].write_to_file(term_type, writer)
+
+                # We are stashing some None values in situations where we 
+                # can't find something (probably a mispelled code). So, let's
+                # not treat those as valid entries to cache
+                if cache[term_type][term] is not None:
+                    cache[term_type][term].write_to_file(term_type, writer)
 
     if len(broken_terms) > 2:
         print("Broken Terms:")
@@ -112,7 +117,6 @@ class HPO:
                             self.data[aid] = data.get('name')
 
             print(f"HPO OBO file has been loaded {len(self.data)} entries collected")
-            print(list(self.data.keys())[0:10])
         else:
             print(f"{HPO.filename} not found. Unable to locally identify HP Codes")
             self.data = {}
@@ -245,6 +249,10 @@ def pull_disease(code, source=None):
             d =  Details(payload['diseaseName'], payload['diseaseId'], source)
             cache['OMIM'][code] = d
             return d
+        else:
+            # If we reach this point, we can't really do much
+            print(f"Even the API doesn't know anything about the code, {code}")
+            cache['OMIM'][code] = None
     return None
 
 
