@@ -20,6 +20,7 @@ CONCEPT.DBGAP_ID = 'PARTICIPANT|DBGAP_ID'
 CONCEPT.PARTICIPANT.DBGAP_SAMPLE_ID = 'PARTICIPANT|SAMPLE|DBGAP_ID'
 CONCEPT.PARTICIPANT.ANCESTRY_DETAIL = 'PARTICIPANT|ANCESTRY_DETAIL'
 CONCEPT.PARTICIPANT.AGE_AT_LAST_OBSERVATION = 'PARTICIPANT|AGE_AT_LAST_OBSERVATION'
+CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND_RAW = 'PARTICIPANT|RELATIONSHIP_TO_PROBAND_RAW'
 CONCEPT.DIAGNOSIS.DESCRIPTION = 'DIAGNOSIS|DESCRIPTION'
 CONCEPT.DIAGNOSIS.DISEASE_ID = 'DIAGNOSIS|DISEASE_ID'
 CONCEPT.DIAGNOSIS.DISEASE_ALTERNATE_IDS = 'DIAGNOSIS|DISEASE_ALTERNATE_IDS'
@@ -37,6 +38,9 @@ CONCEPT.SEQUENCING.ALIGNMENT_METHOD = 'SEQUENCING|ALIGNMENT_METHOD'
 CONCEPT.SEQUENCING.DATA_PROC_PIPELINE = 'SEQUENCING|DATA_PROC_PIPELINE'
 CONCEPT.SEQUENCING.FUNCTIONAL_EQUIVALENCE_PIPELINE = 'SEQUENCING|FUNCTIONAL_EQUIVALENCE_PIPELINE'
 CONCEPT.SEQUENCING.DRS_URI = 'SEQUENCING|DRS_URI'
+
+constants.COMMON.YES = "Yes"
+constants.COMMON.NO = "No"
 
 class SampleProvider(PropertyMixin):
     NAME = None
@@ -61,6 +65,79 @@ CONCEPT.BIOSPECIMEN.TISSUE_TYPE_NAME = "BIOSPECIMEN|TISSUE_TYPE|NAME"
 constants.AFFECTED_STATUS = AffectedStatus
 constants.PHENOTYPE.OBSERVED.PRESENT = "Present"
 constants.PHENOTYPE.OBSERVED.ABSENT = "Absent"
+constants.RELATIONSHIP.HALF_BROTHER = "Half Brother"
+constants.RELATIONSHIP.HALF_SISTER = "Half Sister"
+constants.RELATIONSHIP.HALF_SIBLING = "Half Sibling"
+constants.RELATIONSHIP.MATERNAL_HALF_SIBLING = "Maternal Half Sibling"
+constants.RELATIONSHIP.MATERNAL_HALF_BROTHER = "Maternal Half Brother"
+constants.RELATIONSHIP.MATERNAL_HALF_SISTER = "Maternal Half Sister"
+constants.RELATIONSHIP.PATERNAL_HALF_SIBLING = "Paternal Half Sibling"
+constants.RELATIONSHIP.PATERNAL_HALF_BROTHER = "Paternal Half Brother"
+constants.RELATIONSHIP.PATERNAL_HALF_SISTER = "Paternal Half Sister"
+constants.RELATIONSHIP.GREAT_GRANDPARENT = "Great Grandparent"
+constants.RELATIONSHIP.GREAT_GRANDMOTHER = "Great Grandmother"
+constants.RELATIONSHIP.GREAT_GRANDFATHER = "Great Grandfather"
+constants.RELATIONSHIP.PATERNAL_GREAT_GRANDPARENT = "Paternal Great Grandparent"
+constants.RELATIONSHIP.MATERNAL_GREAT_GRANDPARENT = "Maternal Great Grandparent"
+constants.RELATIONSHIP.PATERNAL_GREAT_GRANDMOTHER = "Paternal Great Grandmother"
+constants.RELATIONSHIP.MATERNAL_GREAT_GRANDMOTHER = "Maternal Great Grandmother"
+constants.RELATIONSHIP.PATERNAL_GREAT_GRANDFATHER = "Paternal Great Grandfather"
+constants.RELATIONSHIP.MATERNAL_GREAT_GRANDFATHER = "Maternal Great Grandfather"
+constants.RELATIONSHIP.MONOZYGOUS_TWIN = "Monozygous Twin"
+constants.RELATIONSHIP.MONOZYGOUS_TWIN_SISTER = "Monozygous Twin Sister"
+constants.RELATIONSHIP.MONOZYGOUS_TWIN_BROTHER = "Monozygous Twin Brother"
+constants.RELATIONSHIP.DIZYGOUS_TWIN = "Dizygous Twin"
+constants.RELATIONSHIP.DIZYGOUS_TWIN_SISTER = "Dizygous Twin Sister"
+constants.RELATIONSHIP.DIZYGOUS_TWIN_BROTHER = "Dizygous Twin Brother"
+constants.RELATIONSHIP.AUNT = "Aunt"
+constants.RELATIONSHIP.UNCLE = "Uncle"
+constants.RELATIONSHIP.MATERNAL_UNCLE = "Maternal Uncle"
+constants.RELATIONSHIP.PATERNAL_UNCLE = "Paternal Uncle"
+constants.RELATIONSHIP.MATERNAL_AUNT = "Maternal Aunt"
+constants.RELATIONSHIP.PATERNAL_AUNT = "Paternal Aunt"
+
+constants.RELATIONSHIP.COUSIN = "Cousin"
+constants.RELATIONSHIP.MATERNAL_COUSIN = "Maternal Cousin"
+constants.RELATIONSHIP.PATERNAL_COUSIN = "Paternal Cousin"
+constants.RELATIONSHIP.MATERNAL_MALE_COUSIN = "Maternal Male Cousin"
+constants.RELATIONSHIP.PATERNAL_MALE_COUSIN = "Paternal Male Cousin"
+constants.RELATIONSHIP.MATERNAL_FEMALE_COUSIN = "Maternal Female Cousin"
+constants.RELATIONSHIP.PATERNAL_FEMALE_COUSIN = "Paternal Female Cousin"
+constants.RELATIONSHIP.DISTANT_MATERNAL_COUSIN = "Distant Maternal Cousin"
+constants.RELATIONSHIP.DISTANT_PATERNAL_COUSIN = "Distant Paternal Cousin"
+constants.RELATIONSHIP.FIRST_COUSIN = 'First Cousin'
+constants.RELATIONSHIP.SECOND_COUSIN = 'Second Cousin'
+constants.RELATIONSHIP.PATERNAL_FIRST_COUSIN = "Paternal First Cousin"
+constants.RELATIONSHIP.MATERNAL_FIRST_COUSIN = "Maternal First Cousin"
+constants.RELATIONSHIP.PATERNAL_SECOND_COUSIN = "Paternal Second Cousin"
+constants.RELATIONSHIP.MATERNAL_SECOND_COUSIN = "Maternal Second Cousin"
+constants.RELATIONSHIP.PATERNAL_FIRST_COUSIN_ONCE_REMOVED = "Paternal First Cousin Once Removed"
+constants.RELATIONSHIP.MATERNAL_FIRST_COUSIN_ONCE_REMOVED = "Maternal First Cousin Once Removed"
+constants.RELATIONSHIP.PATERNAL_SECOND_COUSIN_ONCE_REMOVED = "Paternal Second Cousin Once Removed"
+constants.RELATIONSHIP.MATERNAL_SECOND_COUSIN_ONCE_REMOVED = "Maternal Second Cousin Once Removed"
+constants.RELATIONSHIP.FOURTH_COUSIN_ONCE_REMOVED = "Fourth Cousin Once Removed"
+constants.RELATIONSHIP.PATERNAL_COUSIN_ONCE_REMOVED = "Paternal Cousin Once Removed"
+constants.RELATIONSHIP.MATERNAL_COUSIN_ONCE_REMOVED = "Maternal Cousin Once Removed"
+constants.RELATIONSHIP.FIRST_COUSIN_ONCE_REMOVED = "First Cousin Once Removed"
+constants.RELATIONSHIP.FIRST_COUSIN_TWICE_REMOVED = "First Cousin Twice Removed"
+constants.RELATIONSHIP.SECOND_COUSIN_ONCE_REMOVED = "Second Cousin Once Removed"
+constants.RELATIONSHIP.SECOND_COUSIN_TWICE_REMOVED = "Second Cousin Twice Removed"
+constants.RELATIONSHIP.MATERNAL_GREAT_UNCLE = "Maternal Great Uncle"
+constants.RELATIONSHIP.PATERNAL_GREAT_UNCLE = "Paternal Great Uncle"
+constants.RELATIONSHIP.MATERNAL_GREAT_AUNT = "Maternal Great Aunt"
+constants.RELATIONSHIP.PATERNAL_GREAT_AUNT = "Paternal Great Aunt"
+constants.RELATIONSHIP.GREAT_UNCLE = "Great Uncle"
+constants.RELATIONSHIP.GREAT_AUNT = "Great Aunt"
+constants.RELATIONSHIP.NIECE = 'Niece'
+constants.RELATIONSHIP.HALF_NIECE = "Half Niece"
+constants.RELATIONSHIP.NEPHEW = 'Nephew'
+constants.RELATIONSHIP.HALF_NEPHEW = "Half Nephew"
+constants.RELATIONSHIP.HALF_FIRST_COUSIN = "Half First Cousin"
+constants.RELATIONSHIP.SISTER_IN_LAW = "Sister In Law"
+constants.RELATIONSHIP.BROTHER_IN_LAW = "Brother In Law"
+constants.RELATIONSHIP.NIECE_IN_LAW = "Niece In Law"
+
+
 
 class DISCOVERY(PropertyMixin):
     class GENE(PropertyMixin):
@@ -227,6 +304,158 @@ def add_loinc_coding(value, name = None):
             }
         ],
         "text": name
+    }
+# We'll "transform" into gender specific values
+GENDERFICATION = {
+    constants.GENDER.MALE: {
+        constants.RELATIONSHIP.SPOUSE: constants.RELATIONSHIP.HUSBAND,
+        constants.RELATIONSHIP.PARENT: constants.RELATIONSHIP.FATHER,
+        constants.RELATIONSHIP.SIBLING: constants.RELATIONSHIP.BROTHER,
+        constants.RELATIONSHIP.CHILD: constants.RELATIONSHIP.SON,
+        constants.RELATIONSHIP.TWIN: constants.RELATIONSHIP.TWIN_BROTHER,
+        constants.RELATIONSHIP.MONOZYGOUS_TWIN: constants.RELATIONSHIP.MONOZYGOUS_TWIN_BROTHER,
+        constants.RELATIONSHIP.DIZYGOUS_TWIN: constants.RELATIONSHIP.DIZYGOUS_TWIN_BROTHER,
+        constants.RELATIONSHIP.HALF_SIBLING: constants.RELATIONSHIP.HALF_BROTHER,
+        constants.RELATIONSHIP.MATERNAL_HALF_SIBLING: constants.RELATIONSHIP.MATERNAL_HALF_BROTHER,
+        constants.RELATIONSHIP.PATERNAL_HALF_SIBLING: constants.RELATIONSHIP.PATERNAL_HALF_BROTHER,
+        constants.RELATIONSHIP.GRANDPARENT: constants.RELATIONSHIP.GRANDFATHER,
+        constants.RELATIONSHIP.MATERNAL_GRANDPARENT: constants.RELATIONSHIP.MATERNAL_GRANDFATHER,
+        constants.RELATIONSHIP.PATERNAL_GRANDPARENT: constants.RELATIONSHIP.PATERNAL_GRANDFATHER,
+        constants.RELATIONSHIP.GREAT_GRANDPARENT: constants.RELATIONSHIP.GREAT_GRANDFATHER,
+        constants.RELATIONSHIP.MATERNAL_GRANDPARENT: constants.RELATIONSHIP.MATERNAL_GRANDFATHER,
+        constants.RELATIONSHIP.PATERNAL_GREAT_GRANDPARENT: constants.RELATIONSHIP.PATERNAL_GREAT_GRANDFATHER
+
+    },
+    constants.GENDER.FEMALE: {
+        constants.RELATIONSHIP.SPOUSE: constants.RELATIONSHIP.WIFE,
+        constants.RELATIONSHIP.PARENT: constants.RELATIONSHIP.MOTHER,
+        constants.RELATIONSHIP.SIBLING: constants.RELATIONSHIP.SISTER,
+        constants.RELATIONSHIP.CHILD: constants.RELATIONSHIP.DAUGHTER,
+        constants.RELATIONSHIP.TWIN: constants.RELATIONSHIP.TWIN_SISTER,
+        constants.RELATIONSHIP.MONOZYGOUS_TWIN: constants.RELATIONSHIP.MONOZYGOUS_TWIN_SISTER,
+        constants.RELATIONSHIP.DIZYGOUS_TWIN: constants.RELATIONSHIP.DIZYGOUS_TWIN_SISTER,
+        constants.RELATIONSHIP.HALF_SIBLING: constants.RELATIONSHIP.HALF_SISTER,
+        constants.RELATIONSHIP.MATERNAL_HALF_SIBLING: constants.RELATIONSHIP.MATERNAL_HALF_SISTER,
+        constants.RELATIONSHIP.PATERNAL_HALF_SIBLING: constants.RELATIONSHIP.PATERNAL_HALF_SISTER,
+        constants.RELATIONSHIP.GRANDPARENT: constants.RELATIONSHIP.GRANDMOTHER,
+        constants.RELATIONSHIP.MATERNAL_GRANDPARENT: constants.RELATIONSHIP.MATERNAL_GRANDMOTHER,
+        constants.RELATIONSHIP.PATERNAL_GRANDPARENT: constants.RELATIONSHIP.PATERNAL_GRANDMOTHER,
+        constants.RELATIONSHIP.GREAT_GRANDPARENT: constants.RELATIONSHIP.GREAT_GRANDMOTHER,
+        constants.RELATIONSHIP.MATERNAL_GRANDPARENT: constants.RELATIONSHIP.MATERNAL_GRANDMOTHER,
+        constants.RELATIONSHIP.PATERNAL_GREAT_GRANDPARENT: constants.RELATIONSHIP.PATERNAL_GREAT_GRANDMOTHER
+    }
+}
+
+# And then add non-gender specific options to the coding during fhir load
+DEGENDERFICATION = { v: k for k,v in GENDERFICATION[constants.GENDER.MALE].items() }
+DEGENDERFICATION.update( { v: k for k,v in GENDERFICATION[constants.GENDER.FEMALE].items() } )
+
+# WE keep proband here just for sake of completion. We do block these from going into fhir, though
+RELATIONSHIP_CODE_LKUP = {
+    constants.RELATIONSHIP.PROBAND: ('ONESELF', 'self'),
+    constants.RELATIONSHIP.SPOUSE: ('SPS', 'spouse'),
+    constants.RELATIONSHIP.WIFE: ('WIFE', 'wife'),
+    constants.RELATIONSHIP.HUSBAND: ('HUSB', 'husband'),
+    constants.RELATIONSHIP.PARENT: ('PRN', 'parent'),
+    constants.RELATIONSHIP.CHILD: ("CHILD", "child"),
+    constants.RELATIONSHIP.MOTHER: ("MTH", "mother"),
+    constants.RELATIONSHIP.FATHER: ("FTH", "father"),
+    constants.RELATIONSHIP.TWIN: ("TWIN", "twin"),
+    constants.RELATIONSHIP.TWIN_BROTHER: ("TWINBRO", 'twin brother'),
+    constants.RELATIONSHIP.TWIN_SISTER: ("TWINSIS", "twin sister"),
+    constants.RELATIONSHIP.MONOZYGOUS_TWIN: ("ITWIN", "identical twin"),
+    constants.RELATIONSHIP.MONOZYGOUS_TWIN_SISTER: ("ITWINSIS", "identical twin sister"),
+    constants.RELATIONSHIP.MONOZYGOUS_TWIN_BROTHER: ("ITWINBRO", "identical twin brother"),
+    constants.RELATIONSHIP.DIZYGOUS_TWIN: ("FTWIN", "fraternal twin"),
+    constants.RELATIONSHIP.DIZYGOUS_TWIN_SISTER: ("FTWINSIS", "fraternal twin sister"),
+    constants.RELATIONSHIP.DIZYGOUS_TWIN_BROTHER: ("FTWINBRO", "fraternal twin brother"),
+    constants.RELATIONSHIP.SIBLING: ("SIB", "sibling"),
+    constants.RELATIONSHIP.BROTHER: ('BRO', 'brother'),
+    constants.RELATIONSHIP.SISTER: ('SIS', 'sister'),
+    constants.RELATIONSHIP.SON: ("SON", "son"),
+    constants.RELATIONSHIP.DAUGHTER: ("DAUC", "daughter"),
+    constants.RELATIONSHIP.HALF_SIBLING: ("HSIB", "half-sibling"),
+    constants.RELATIONSHIP.HALF_BROTHER: ("HBRO", "half-brother"),
+    constants.RELATIONSHIP.HALF_SISTER: ("HSIS", "half-sister"),
+    constants.RELATIONSHIP.MATERNAL_HALF_SIBLING: ("HSIB", "half-sibling"),
+    constants.RELATIONSHIP.MATERNAL_HALF_BROTHER: ("HBRO", "half-brother"),
+    constants.RELATIONSHIP.MATERNAL_HALF_SISTER: ("HSIS", "half-sister"),
+    constants.RELATIONSHIP.PATERNAL_HALF_SIBLING: ("HSIB", "half-sibling"),
+    constants.RELATIONSHIP.PATERNAL_HALF_BROTHER: ("HBRO", "half-brother"),
+    constants.RELATIONSHIP.PATERNAL_HALF_SISTER: ("HSIS", "half-sister"),
+    constants.RELATIONSHIP.GRANDCHILD: ('GRNDCHILD', 'grandchild'),
+    constants.RELATIONSHIP.GRANDDAUGHTER: ('GRNDDAU', 'granddaughter'),
+    constants.RELATIONSHIP.GRANDSON: ('GRNDSON', 'grandson'),
+    constants.RELATIONSHIP.GRANDPARENT: ("GRPRN", "grandparent"),
+    constants.RELATIONSHIP.GRANDMOTHER: ("GRMTH", "grandmother"),
+    constants.RELATIONSHIP.GRANDFATHER: ("GRFTH", "grandfather"),
+    constants.RELATIONSHIP.MATERNAL_GRANDPARENT: ("MGRPRN", "maternal grandparent"),
+    constants.RELATIONSHIP.MATERNAL_GRANDMOTHER: ("MGRMTH", "maternal grandmother"),
+    constants.RELATIONSHIP.MATERNAL_GRANDFATHER: ("MGRFTH", "maternal grandfather"),
+    constants.RELATIONSHIP.PATERNAL_GRANDPARENT: ("PGRPRN", "paternal gradnparent"),
+    constants.RELATIONSHIP.PATERNAL_GRANDMOTHER: ("PGRMTH", "paternal grandmother"),
+    constants.RELATIONSHIP.PATERNAL_GRANDFATHER: ("PGRFTH", "paternal grandfather"),
+    constants.RELATIONSHIP.GREAT_GRANDPARENT: ("GRPRN", "great-grandparent"),
+    constants.RELATIONSHIP.GREAT_GRANDMOTHER: ("GRMTH", "great-grandmother"),
+    constants.RELATIONSHIP.GREAT_GRANDFATHER: ("GRFTH", "great-grandfather"),
+    constants.RELATIONSHIP.MATERNAL_GREAT_GRANDPARENT: ("MGRPRN", "maternal great-grandparent"),
+    constants.RELATIONSHIP.MATERNAL_GREAT_GRANDMOTHER: ("MGRMTH", "maternal great-grandmother"),
+    constants.RELATIONSHIP.MATERNAL_GREAT_GRANDFATHER: ("MGRFTH", "maternal great-grandfather"),
+    constants.RELATIONSHIP.PATERNAL_GREAT_GRANDPARENT: ("PGRPRN", "paternal great-gradnparent"),
+    constants.RELATIONSHIP.PATERNAL_GREAT_GRANDMOTHER: ("PGRMTH", "paternal great-grandmother"),
+    constants.RELATIONSHIP.PATERNAL_GREAT_GRANDFATHER: ("PGRFTH", "paternal great-grandfather"),
+    constants.RELATIONSHIP.AUNT: ("AUNT", "aunt"),
+    constants.RELATIONSHIP.UNCLE: ("UNCLE", 'uncle'),
+    constants.RELATIONSHIP.MATERNAL_AUNT: ("MAUNT", "maternal aunt"),
+    constants.RELATIONSHIP.PATERNAL_AUNT: ("PAUNT", "paternal aunt"),
+    constants.RELATIONSHIP.MATERNAL_UNCLE: ("MUNCLE", "maternal uncle"),
+    constants.RELATIONSHIP.PATERNAL_UNCLE: ("PUNCLE", "paternal uncle"),
+    constants.RELATIONSHIP.MATERNAL_GREAT_UNCLE: ('EXT', 'extended family member'),    
+    constants.RELATIONSHIP.MATERNAL_GREAT_AUNT: ('EXT', 'extended family member'),
+    constants.RELATIONSHIP.GREAT_UNCLE: ("EXT", "extended family member"),
+    constants.RELATIONSHIP.GREAT_AUNT: ("EXT", "extended family member"),
+    constants.RELATIONSHIP.NIECE: ("NIECE", "niece"),
+    constants.RELATIONSHIP.HALF_NIECE: ("EXT", "extended family member"),
+    constants.RELATIONSHIP.NEPHEW: ("NEPHEW", "nephew"),
+    constants.RELATIONSHIP.HALF_NEPHEW: ("EXT", "extended family member"),
+    constants.RELATIONSHIP.HALF_FIRST_COUSIN : ("EXT", "extended family member"),
+    constants.RELATIONSHIP.SISTER_IN_LAW: ("SISINLAW", "sister-in-law"),
+    constants.RELATIONSHIP.BROTHER_IN_LAW: ("BROINLAW", "brother-in-law"),
+    constants.RELATIONSHIP.NIECE_IN_LAW: ("EXT", "extended family member"),
+    constants.RELATIONSHIP.COUSIN: ("COUSN", "cousin"),
+    constants.RELATIONSHIP.MATERNAL_COUSIN: ("MCOUSN", "maternal cousin"),
+    constants.RELATIONSHIP.PATERNAL_COUSIN: ("PCOUSN", "paternal cousin"),
+    constants.RELATIONSHIP.MATERNAL_MALE_COUSIN: ("MCOUSN", "maternal cousin"),
+    constants.RELATIONSHIP.PATERNAL_MALE_COUSIN: ("PCOUSN", "paternal cousin"),
+    constants.RELATIONSHIP.MATERNAL_FEMALE_COUSIN: ("MCOUSN", "maternal cousin"),
+    constants.RELATIONSHIP.PATERNAL_FEMALE_COUSIN: ("PCOUSN", "paternal cousin"),
+    constants.RELATIONSHIP.DISTANT_MATERNAL_COUSIN: ("MCOUSN", "maternal cousin"),
+    constants.RELATIONSHIP.DISTANT_PATERNAL_COUSIN: ("PCOUSN", "paternal cousin"),
+    constants.RELATIONSHIP.FIRST_COUSIN: ("COUSN", "cousin"),
+    constants.RELATIONSHIP.SECOND_COUSIN: ("COUSN", "cousin"),
+    constants.RELATIONSHIP.PATERNAL_FIRST_COUSIN: ("PCOUSN", "paternal cousin"),
+    constants.RELATIONSHIP.MATERNAL_FIRST_COUSIN: ("MCOUSN", "maternal cousin"),
+    constants.RELATIONSHIP.PATERNAL_SECOND_COUSIN: ("PCOUSN", "paternal cousin"),
+    constants.RELATIONSHIP.MATERNAL_SECOND_COUSIN: ("MCOUSN", "maternal cousin"),
+    constants.RELATIONSHIP.PATERNAL_FIRST_COUSIN_ONCE_REMOVED: ("PCOUSN", "paternal cousin"),
+    constants.RELATIONSHIP.MATERNAL_FIRST_COUSIN_ONCE_REMOVED: ("MCOUSN", "maternal cousin"),
+    constants.RELATIONSHIP.PATERNAL_SECOND_COUSIN_ONCE_REMOVED: ("PCOUSN", "paternal cousin"),
+    constants.RELATIONSHIP.MATERNAL_SECOND_COUSIN_ONCE_REMOVED: ("MCOUSN", "maternal cousin"),
+    constants.RELATIONSHIP.FOURTH_COUSIN_ONCE_REMOVED: ("COUSN", "cousin"),
+    constants.RELATIONSHIP.PATERNAL_COUSIN_ONCE_REMOVED: ("PCOUSN", "paternal cousin"),
+    constants.RELATIONSHIP.MATERNAL_COUSIN_ONCE_REMOVED: ("MCOUSN", "maternal cousin"),
+    constants.RELATIONSHIP.FIRST_COUSIN_ONCE_REMOVED: ("COUSN", "cousin"),
+    constants.RELATIONSHIP.FIRST_COUSIN_TWICE_REMOVED: ("COUSN", "cousin"),
+    constants.RELATIONSHIP.SECOND_COUSIN_ONCE_REMOVED: ("COUSN", "cousin"),
+    constants.RELATIONSHIP.SECOND_COUSIN_TWICE_REMOVED: ("COUSN", "cousin"),
+}
+def add_family_encoding(value):
+    (code, text_val) = RELATIONSHIP_CODE_LKUP[value]
+
+    return {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": code,
+                "display": text_val
     }
 
 terminology = {
