@@ -234,14 +234,25 @@ class Patient:
                 entity["gender"] = administrative_gender[gender]
 
         if age_at_last_observation:
+            # For now, we'll just use float, but we could switch over to 
+            # months if there is a good reason.
+            try:
+                value = float(age_at_last_observation)
+                code = "a"
+                display = "years"
+            except:
+                display = "months"
+                code = "mo"
+                value = 12 * float(age_at_last_observation)
+
             entity.setdefault("extension", []).append(
                 {
                     "url": "http://fhir.ncpi-project-forge.io/StructureDefinition/age-at-event",
                     "valueAge": {
-                        "value": int(age_at_last_observation),
-                        "unit": "a",
+                        "value": value,
+                        "unit": code,
                         "system": "http://unitsofmeasure.org",
-                        "code": "years",
+                        "code": display,
                     },
                 }
             )
