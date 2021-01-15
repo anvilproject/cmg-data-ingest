@@ -57,6 +57,8 @@ class DiscoveryVariant:
 
         return record.get(CONCEPT.DISCOVERY.VARIANT.UNIQUE_KEY) or join(
             record[CONCEPT.STUDY.ID],
+            record[CONCEPT.BIOSPECIMEN.ID],
+            record[CONCEPT.PARTICIPANT.ID],
             record[CONCEPT.DISCOVERY.VARIANT.ID]
         )
 
@@ -82,6 +84,9 @@ class DiscoveryVariant:
         transcript = record[CONCEPT.DISCOVERY.VARIANT.TRANSCRIPT]
         sv_name = record[CONCEPT.DISCOVERY.VARIANT.SV_NAME]
         sv_type = record[CONCEPT.DISCOVERY.VARIANT.SV_TYPE]
+
+        if sv_name == "":
+            sv_name = sv_type
 
         entity = {
             "resourceType": DiscoveryVariant.resource_type,
@@ -178,7 +183,7 @@ class DiscoveryVariant:
                             }
                         ]
                     },
-                    "valueCodeableConcept" : add_loinc_coding(chrom)
+                    "valueCodeableConcept" : add_loinc_coding(chrom)  
                 }
             )
 

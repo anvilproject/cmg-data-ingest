@@ -29,6 +29,8 @@ class DiscoveryImplication:
 
         return join(
             record[CONCEPT.STUDY.ID],
+            record[CONCEPT.BIOSPECIMEN.ID],
+            record[CONCEPT.PARTICIPANT.ID],
             record[CONCEPT.DISCOVERY.VARIANT.ID],
             record[CONCEPT.DISCOVERY.VARIANT.INHERITANCE]
         )
