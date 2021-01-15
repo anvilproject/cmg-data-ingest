@@ -24,7 +24,10 @@ class Gene:
         self.orphanet = None 
         if 'orphanet' in data_chunk:
             self.orphanet = data_chunk['orphanet']
-        self.pubmed = data_chunk['pubmed_id']
+
+        self.pubmed = None
+        if 'pubmed_id' in data_chunk:
+            self.pubmed = data_chunk['pubmed_id']
         self.refseq = data_chunk['refseq_accession']
         self.status = data_chunk['status']
         self.gene_group = None 
