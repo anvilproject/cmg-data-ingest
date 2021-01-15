@@ -88,8 +88,33 @@ if __name__ == "__main__":
         disease = read_df(f'{input_file_dir}/disease.tsv')
         hpo = read_df(f'{input_file_dir}/hpo.tsv')
         sequencing_data = read_df(f'{input_file_dir}/sequencing.tsv')
-        discovery_variant = read_df(f"{input_file_dir}/discovery_variant.tsv") 
-        discovery_report = read_df(f"{input_file_dir}/discovery_report.tsv")
+
+        basic_reports = {
+            "default": subjects,
+            'research_study': specimens,
+            'research_subject': specimens,
+            'tissue_affected_status': specimens,
+            'sequencing_center': specimens,
+            "family_relationship": subjects,
+            "disease": disease,
+            "specimen": specimens,
+            'human_phenotype': hpo,
+            'sequencing_file': sequencing_data,
+            'sequencing_data': sequencing_data,
+            "sequencing_file_info": sequencing_data,           
+        }
+        offs = {    
+        }
+        if Path(f"{input_file_dir}/discovery_variant.tsv").is_file():
+            discovery_variant = read_df(f"{input_file_dir}/discovery_variant.tsv") 
+
+            basic_reports['discovery_variant'] = discovery_variant
+            basic_reports["discovery_implication"] = discovery_variant
+
+        if Path(f"{input_file_dir}/discovery_report.tsv").is_file():
+            discovery_report = read_df(f"{input_file_dir}/discovery_report.tsv")
+
+            basic_reports["discovery_report"] = discovery_report
 
         outcome = LoadStage(
             path_to_my_target_service_plugin,
@@ -97,24 +122,7 @@ if __name__ == "__main__":
             list_of_class_names_to_load,
             study_id,
             str(path_to_cache_storage_directory)
-        ).run(
-            {
-                "default": subjects,
-                'research_study': specimens,
-                'research_subject': specimens,
-                'tissue_affected_status': specimens,
-                'sequencing_center': specimens,
-                "family_relationship": subjects,
-                "disease": disease,
-                "specimen": specimens,
-                'human_phenotype': hpo,
-                'sequencing_file': sequencing_data,
-                'sequencing_data': sequencing_data,
-                "sequencing_file_info": sequencing_data,
-                "discovery_variant": discovery_variant,
-                "discovery_implication": discovery_variant,
-                "discovery_report": discovery_report
-            })
+        ).run(basic_reports)
         logger = logging.getLogger(__name__)
         sleep(1)
 
