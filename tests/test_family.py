@@ -30,7 +30,7 @@ def test_specimen_details(study, transformed_dir):
             assert subject_id == subject.subject_id, "Make sure subject IDs do match"
 
             # We have a limited number of relationships of interest
-            if relationship:
+            if relationship and proband_id != "":
             	proband = patients[proband_id]
             	parents = proband.parents()
             	if relationship == constants.RELATIONSHIP.MOTHER:
