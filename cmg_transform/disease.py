@@ -9,7 +9,7 @@ class Disease:
         self.id = Transform.CleanSubjectId(row['subject_id']) # Transform.CleanSubjectId(row['subject_id'])
         self.fam_id = family_lkup[self.id]
         # For now, we are going to assert that we got only a single disease_id (or none)
-        self.disease_id = row['disease_id'].split("|")
+        self.disease_id = Transform.ExtractVar(row, 'disease_id').split("|")
 
         # When we get more than one disease id, all but the primary (first?) will go here
         # and should end up in the fhir record's note
@@ -17,17 +17,17 @@ class Disease:
         self.alternate_disease_names = ""
 
 
-        self.disease_description = row['disease_description']
+        self.disease_description = Transform.ExtractVar(row, 'disease_description')
         self.disease_name = self.disease_description
         self.disease_system = None
-        self.phenotype_description = row['phenotype_description']
+        self.phenotype_description = Transform.ExtractVar(row, 'phenotype_description')
 
         self.get_disease_details(row)
         
-        self.hpo_present = row['hpo_present'].split("|")
-        self.hpo_absent = row['hpo_absent'].split("|")
-        self.affected_status = row['affected_status']
-        self.age_of_onset = row['age_of_onset']
+        self.hpo_present = Transform.ExtractVar(row, 'hpo_present').split("|")
+        self.hpo_absent = Transform.ExtractVar(row, 'hpo_absent').split("|")
+        self.affected_status = Transform.ExtractVar(row, 'affected_status')
+        self.age_of_onset = Transform.ExtractVar(row, 'age_of_onset')
 
     def get_disease_details(self, row):
         primary_id = None
@@ -48,7 +48,7 @@ class Disease:
                     valid_ids.append(id)
 
         if primary_id is None:
-            term_lookup.broken_terms[id] = row['disease_description']
+            term_lookup.broken_terms[id] = Transform.ExtractVar(row, 'disease_description')
             return None
         self.disease_id = valid_ids
         self.disease_name = primary_details.name
@@ -70,7 +70,7 @@ class Disease:
 
     def hpo_writerow(self, study_name, writer):
         for hpo in self.hpo_present:
-            if hpo is not None and hpo != "":
+            if hpo is not None and hpo != "" and hpo != "-":
                 details = pull_details(hpo)
                 if details is not None:
                     writer.writerow([
@@ -84,7 +84,7 @@ class Disease:
                 else:
                     print(f"Unrecognized HPO Term: {hpo}")
         for hpo in self.hpo_absent:
-            if hpo is not None and hpo != "":
+            if hpo is not None and hpo != "" and hpo != "-":
                 details = pull_details(hpo)
                 if details is not None:
                     writer.writerow([

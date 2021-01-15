@@ -15,16 +15,16 @@ class Sample:
     def __init__(self, row, family_lkup, subid_lkup):
         self.id = Transform.CleanSubjectId(row['subject_id']) #Transform.CleanSubjectId(row['subject_id'])
         self.fam_id = family_lkup[self.id]
-        self.sample_id = row['sample_id']
-        self.dbgap_sample_id = row['dbgap_sample_id']
-        self.sample_source = row['sample_source']
+        self.sample_id = Transform.ExtractVar(row, 'sample_id')
+        self.dbgap_sample_id = Transform.ExtractVar(row, 'dbgap_sample_id')
+        self.sample_source = Transform.ExtractVar(row, 'sample_source').strip()
 
         if 'sequencing_center' in row:
-            self.sample_provider = row['sequencing_center']
+            self.sample_provider = Transform.ExtractVar(row, 'sequencing_center')
         else:
-            self.sample_provider = row['sample_provider']
+            self.sample_provider = Transform.ExtractVar(row, 'sample_provider')
 
-        self.tissue_affected_status = Transform.CleanVar(constants.PHENOTYPE.OBSERVED, row.get('tissue_affected_status'))
+        self.tissue_affected_status = Transform.ExtractVar(row, 'tissue_affected_status', constants.PHENOTYPE.OBSERVED)
         
         if self.sample_source in tissue_type_replacements:
             self.sample_source = tissue_type_replacements[self.sample_source]
