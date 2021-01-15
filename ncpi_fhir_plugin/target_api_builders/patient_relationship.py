@@ -4,44 +4,11 @@ participant family data.
 """
 import pandas as pd
 
-from ncpi_fhir_plugin.common import constants, CONCEPT
+from ncpi_fhir_plugin.common import constants, CONCEPT, add_family_encoding, DEGENDERFICATION
 from ncpi_fhir_plugin.shared import join, make_identifier
 from ncpi_fhir_plugin.target_api_builders.ncpi_patient import Patient
 
-# https://www.hl7.org/fhir/v3/FamilyMember/vs.html
-relation_dict = {
-    constants.RELATIONSHIP.MOTHER: {
-        "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-        "code": "MTH",
-        "display": "mother",
-    },
-    constants.RELATIONSHIP.FATHER: {
-        "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-        "code": "FTH",
-        "display": "father",
-    },
-    constants.RELATIONSHIP.PROBAND: {
-        "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-        "code": "ONESELF",
-        "display": "proband",
-    },
-    constants.RELATIONSHIP.TWIN: {
-        "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-        "code": "TWIN",
-        "display": "twin",
-    },
-    constants.RELATIONSHIP.CHILD: {
-        "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-        "code": "CHILD",
-        "display": "child",
-    },
-    constants.RELATIONSHIP.PARENT: {
-        "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-        "code": "PRN",
-        "display": "parent"
-    }
-}
-
+import pdb
 
 class PatientRelation:
     class_name = "family_relationship"
@@ -56,6 +23,7 @@ class PatientRelation:
         assert None is not record[CONCEPT.PARTICIPANT.PROBAND_ID]
         assert record[CONCEPT.PARTICIPANT.PROBAND_ID].strip() != ""
         assert None is not record[CONCEPT.STUDY.ID]
+        assert record[CONCEPT.PARTICIPANT.ID] != record[CONCEPT.PARTICIPANT.PROBAND_ID]
 
         return join(
             record[CONCEPT.STUDY.ID],
@@ -68,10 +36,17 @@ class PatientRelation:
     def build_entity(record, key, get_target_id_from_record):
         participant_id = record.get(CONCEPT.PARTICIPANT.ID)
         relationship = record.get(CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND)
+        relationship_raw = record.get(CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND_RAW)
         proband = record.get(CONCEPT.PARTICIPANT.PROBAND_ID)
         study_id = record[CONCEPT.STUDY.ID]
         proband_id = get_target_id_from_record(Patient, {CONCEPT.PARTICIPANT.ID: record[CONCEPT.PARTICIPANT.PROBAND_ID]})
-        valuecc = relation_dict[relationship]
+        #pdb.set_trace()
+        rel_struct = [add_family_encoding(relationship)]
+
+        # Add in the gender neutral terms
+        if relationship in DEGENDERFICATION:
+            rel_struct = [add_family_encoding(DEGENDERFICATION[relationship]), rel_struct[0]]
+
 
         # Are patients limited to a single institution?
         # institution = record[CONCEPT.STUDY.PROVIDER.ID]
@@ -98,14 +73,8 @@ class PatientRelation:
             "subject" : {'reference': f"{Patient.resource_type}/{get_target_id_from_record(Patient, record)}"},
             "focus" : [{'reference' : f"{Patient.resource_type}/{proband_id}"}],
             "valueCodeableConcept": {
-                "coding": [ 
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-                        "code": "PRN",
-                        "display": "parent"
-                    }, 
-                    relation_dict[relationship]
-                ]
+                "coding": rel_struct,
+                "text": relationship_raw
             }
         }
 
