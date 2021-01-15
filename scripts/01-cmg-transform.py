@@ -9,12 +9,16 @@ from term_lookup import pull_details, write_cache, remote_calls
 
 from ncpi_fhir_plugin.common import CONCEPT, constants
 
+from variant_details import Variant
+
 from cmg_transform import Transform
 from cmg_transform.discovery_variant import DiscoveryVariant
 from cmg_transform.disease import Disease
 from cmg_transform.patient import Patient
 from cmg_transform.sample import Sample
 from cmg_transform.sequencing import Sequencing 
+
+from cmg_transform.change_logger import ChangeLog
 
 # Theoretically, there will be a sample_provider and a sample_source coming from the
 # data. In Terra, that doesn't always seem true, but I suspect that those assumed based
@@ -35,6 +39,15 @@ def Run(output, study_name, dataset, delim=None):
     # need to define that. 
     proband_relationships = defaultdict(dict)           # parent_id => "relationship" => proband_id 
 
+    if 'field_map' in dataset:
+        Transform.LoadFieldMap(dataset['field_map'])
+        print(Transform._field_map)
+
+    if 'data_map' in dataset:
+        Transform.LoadDataMap(dataset['data_map'])
+        print(Transform._data_map)
+        print(Transform._data_transform)
+
     drs_ids = {}
     if 'drs' in dataset:
         with open(dataset['drs'], 'rt') as file:
@@ -46,16 +59,20 @@ def Run(output, study_name, dataset, delim=None):
                     drs_ids[fn] = locals[fn]
 
     diseases = []
-    with open(dataset['subject'], 'rt') as file:
-        reader = csv.DictReader(file, delimiter=delim, quotechar='"')
+    with open(dataset['subject'], 'rt', encoding='utf-8-sig') as file:
+        Transform._cur_filename = 'subject'
+        reader = Transform.GetReader(file, delimiter=delim)
 
+        print(f"The Patient: {dataset['subject']}")
         with open(output / "subject.tsv", 'wt') as outf:
             writer = csv.writer(outf, delimiter='\t', quotechar='"')
             Patient.write_default_header(writer)
 
             peeps = []
-
+            Transform._linenumber = 1
             for line in reader:
+                Transform._linenumber += 1
+                #print(f"-- {line}")
                 p = Patient(line, family_lkup, proband_relationships)
                 peeps.append(p)
 
@@ -82,13 +99,17 @@ def Run(output, study_name, dataset, delim=None):
                             # our sequencing output
     subj_id = {}            # There are some datasets where there is no
                             # subject ID in the sequencing file
-    with open(dataset['sample'], 'rt') as file:
-        reader = csv.DictReader(file, delimiter=delim, quotechar='"')
+    with open(dataset['sample'], 'rt', encoding='utf-8-sig') as file:
+        Transform._cur_filename = 'sample'
+        reader = Transform.GetReader(file, delimiter=delim)
+
         with open(output / "specimen.tsv", 'wt') as outf:
             writer = csv.writer(outf, delimiter='\t', quotechar='"')
             Sample.write_default_header(writer)
 
+            Transform._linenumber = 1
             for line in reader:
+                Transform._linenumber += 1
                 # We skip over samples that exist twice--a side effect
                 # of concatting wgs onto the the wes data
                 if line['sample_id'] not in Sample.observed:
@@ -97,47 +118,55 @@ def Run(output, study_name, dataset, delim=None):
                         seq_centers[s.sample_id] = s.sample_provider
                     s.write_row(study_name, writer)
 
-    with open(dataset['sequencing'], 'rt') as file:
-        reader = csv.DictReader(file, delimiter=delim, quotechar='"')
+    with open(dataset['sequencing'], 'rt', encoding='utf-8-sig') as file:
+        Transform._cur_filename = 'sequencing'
+        reader = Transform.GetReader(file, delimiter=delim)
         
         with open(output / "sequencing.tsv", 'wt') as outf:
             writer = csv.writer(outf, delimiter='\t', quotechar='"')
             Sequencing.write_header(writer)
 
+            Transform._linenumber = 1
             for row in reader:
+                Transform._linenumber += 1
                 seq = Sequencing(row, seq_centers, subj_id)
                 seq.write_row(study_name, writer, drs_ids)
 
-    with open(dataset['discovery'], 'rt') as file:
-        reader = csv.DictReader(file, delimiter=delim, quotechar='"')
+    if "discovery" in dataset:
+        with open(dataset['discovery'], 'rt', encoding='utf-8-sig') as file:
+            Transform._cur_filename = 'discovery'
+            reader = Transform.GetReader(file, delimiter=delim)
 
-        # subject_id => [variant_id, ...]
-        variants = defaultdict(list)
-        with open(output / "discovery_variant.tsv", 'wt') as outf:
-            writer = csv.writer(outf, delimiter='\t', quotechar='"')
-            DiscoveryVariant.writeheader(writer)
+            # subject_id => [variant_id, ...]
+            variants = defaultdict(list)
+            with open(output / "discovery_variant.tsv", 'wt') as outf:
+                writer = csv.writer(outf, delimiter='\t', quotechar='"')
+                DiscoveryVariant.writeheader(writer)
 
-            for row in reader:
-                var = DiscoveryVariant(row)
-                var.writerow(writer, study_name)
-                var.add_variant_ids(variants)
+                Transform._linenumber = 1
+                for row in reader:
+                    Transform._linenumber += 1
+                    var = DiscoveryVariant(row)
+                    var.writerow(writer, study_name)
+                    var.add_variant_ids(variants)
 
 
-        with open(output / "discovery_report.tsv", 'wt') as outf:
-            writer = csv.writer(outf, delimiter='\t', quotechar='"')
-            writer.writerow([
-                    CONCEPT.STUDY.ID,
-                    CONCEPT.PARTICIPANT.ID,
-                    CONCEPT.DISCOVERY.VARIANT.ID
-            ])
+            with open(output / "discovery_report.tsv", 'wt') as outf:
+                writer = csv.writer(outf, delimiter='\t', quotechar='"')
+                writer.writerow([
+                        CONCEPT.STUDY.ID,
+                        CONCEPT.PARTICIPANT.ID,
+                        CONCEPT.DISCOVERY.VARIANT.ID
+                ])
 
-            for id in variants.keys():
-                writer.writerow([study, id, "::".join(variants[id])])
+                for id in variants.keys():
+                    writer.writerow([study, id, "::".join(variants[id])])
 
 if __name__ == "__main__":
     config = DataConfig.config()
     env_options = config.list_environments()
     ds_options = config.list_datasets()
+
 
     parser = ArgumentParser()
     parser.add_argument("-e", 
@@ -147,17 +176,24 @@ if __name__ == "__main__":
             help=f"Remote configuration to be used")
     parser.add_argument("-d", 
                 "--dataset", 
-                choices=ds_options,
+                choices=['ALL'] + ds_options,
                 default=[],
                 help=f"Dataset config to be used",
                 action='append')
     parser.add_argument("-o", "--out", default='output')
     args = parser.parse_args()
+
     datasets = args.dataset 
+
+    if 'ALL' in datasets:
+        datasets = ds_options
+        
     if len(datasets) == 0:
         datasets.append('FAKE-CMG')
 
     for study in sorted(datasets):
+        ChangeLog.InitDB(args.out, study, purge_priors=True)
+
         dirname = Path(f"{args.out}/{study}/transformed")
         dirname.mkdir(parents=True, exist_ok=True)
         Run(dirname, study, config.get_dataset(study))
@@ -166,3 +202,7 @@ if __name__ == "__main__":
     write_cache()
 
     print(f"Total calls to remote api {remote_calls}")
+
+    # Make sure the cache is saved
+    Variant.cache.commit()
+    ChangeLog.Close()
