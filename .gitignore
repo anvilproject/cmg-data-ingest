@@ -1,6 +1,8 @@
 # Don't want to check in any real data
 output
 anvil_cmg
+*.obo
+*.owl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

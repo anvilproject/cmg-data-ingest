@@ -17,5 +17,5 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=requirements,
-    scripts=["scripts/01-transform.py", "scripts/01_cmg_transform.py", "scripts/02_cmg_load.py"],
+    scripts=["scripts/01-cmg-transform.py", "scripts/02_cmg_load.py"],
 )
