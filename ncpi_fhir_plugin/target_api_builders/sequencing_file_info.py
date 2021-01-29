@@ -8,21 +8,26 @@ from ncpi_fhir_plugin.target_api_builders.ncpi_patient import Patient
 from ncpi_fhir_plugin.target_api_builders.sequencing_task import SequencingTask
 from ncpi_fhir_plugin.target_api_builders.sequencing_file import SequencingFile
 from ncpi_fhir_plugin.target_api_builders import Component
+from ncpi_fhir_plugin.target_api_builders import TargetBase
 
-class SequencingFileInfo:
+class SequencingFileInfo(TargetBase):
     class_name = "sequencing_file_info"
     resource_type = "Observation"
     target_id_concept = CONCEPT.SEQUENCING.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
+        # These are required for the variant
         assert None is not record[CONCEPT.SEQUENCING.ID]
 
-        return "SEQ|FILE|INFO", record[CONCEPT.SEQUENCING.ID]
+        return {
+            "identifier":  join("SEQ|FILE|INFO", record[CONCEPT.SEQUENCING.ID])
+        }
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
-        study_id = record[CONCEPT.STUDY.ID]
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
+        study_id = record[CONCEPT.STUDY.NAME]
         seq_filename = record.get(CONCEPT.SEQUENCING_GENOMIC_FILE.ID)
         seq_id = record.get(CONCEPT.SEQUENCING.ID)
         file_format = record.get(CONCEPT.GENOMIC_FILE.FILE_FORMAT)
@@ -43,8 +48,8 @@ class SequencingFileInfo:
             },     
             "identifier": [
                 {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(SequencingFileInfo.resource_type, seq_id),
+                    "system" : f"{cls.identifier_system}",
+                    "value": key,
                 },
             ],       
             "status": "final",

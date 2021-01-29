@@ -7,6 +7,7 @@ of tabular participant data.
 # instead of the KF versions
 from ncpi_fhir_plugin.common import constants, CONCEPT
 from ncpi_fhir_plugin.shared import join
+from ncpi_fhir_plugin.target_api_builders import TargetBase
 
 import pdb
 
@@ -144,22 +145,27 @@ administrative_gender = {
 }
 
 
-class Patient:
+class Patient(TargetBase):
     class_name = "patient"
     resource_type = "Patient"
     target_id_concept = CONCEPT.PARTICIPANT.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
+        # These are required for the variant
         assert None is not record[CONCEPT.PARTICIPANT.ID]
-            
-        return record.get(CONCEPT.PARTICIPANT.UNIQUE_KEY) or join(
-            record[CONCEPT.PARTICIPANT.ID]
-        )
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
-        study_id = record[CONCEPT.STUDY.ID]
+        return {
+            "identifier":  join(
+                record[CONCEPT.PARTICIPANT.ID]
+            )
+        }
+
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
+
+        study_id = record[CONCEPT.STUDY.NAME]
         participant_id = record.get(CONCEPT.PARTICIPANT.ID)
         ethnicity = record.get(CONCEPT.PARTICIPANT.ETHNICITY)
         race = record.get(CONCEPT.PARTICIPANT.RACE)
@@ -186,8 +192,8 @@ class Patient:
                     "value": participant_id,
                 },
                 {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(Patient.resource_type, study_id, key),
+                    "system" : f"{cls.identifier_system}",
+                    "value": key,
                 }
             ]
         }

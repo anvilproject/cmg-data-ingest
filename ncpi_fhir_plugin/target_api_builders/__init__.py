@@ -1,3 +1,69 @@
+from fhir_walk.fhir_host import FhirHost
+from fhirwood.identifier import Identifier
+from pprint import pformat
+from requests import RequestException
+import sys
+import pdb 
+
+clients = {}
+def submit(host, entity_class, body):
+    global fhir_server
+    #print(fhir_server)
+    # default to...dev environment
+    fhir_server = FhirHost.host()
+
+    clients[host] = clients.get(host) or fhir_server.client()
+
+    # drop empty fields
+    body = {k: v for k, v in body.items() if v not in (None, [], {})}
+
+    verb = "POST"
+    api_path = f"{host}/{entity_class.resource_type}"
+    if "id" in body:
+        verb = "PUT"
+        api_path = f"{api_path}/{body['id']}"
+
+    cheaders = clients[host]._fhir_version_headers()
+    if verb == "PATCH":
+        cheaders["Content-Type"] = cheaders["Content-Type"].replace(
+            "application/fhir", "application/json-patch"
+        )
+
+    if fhir_server.cookie:
+        cheaders['cookie'] = fhir_server.cookie
+
+    # print(cheaders)
+
+    success, result = clients[host].send_request(
+        verb, api_path, json=body, headers=cheaders
+    )
+
+    if (
+        (not success)
+        and (verb == "PUT")
+        and (
+            "no resource with this ID exists"
+            in result.get("response", {})
+            .get("issue", [{}])[0]
+            .get("diagnostics", "")
+        )
+    ):
+        verb = "POST"
+        api_path = f"{host}/{entity_class.resource_type}"
+        success, result = clients[host].send_request(
+            verb, api_path, json=body, headers=cheaders
+        )
+
+    if success:
+        return result["response"]["id"]
+    else:
+        print(pformat(body))
+        raise RequestException(
+            f"Sent {verb} request to {api_path}:\n{pformat(body)}"
+            f"\nGot:\n{pformat(result)}"
+        )
+
+
 def addReference(value_name, value_ref):
     return {
         "type": {
@@ -22,6 +88,51 @@ def addValuebool(value_name, value):
                 },
                 "valueBoolean": value
             }
+
+def drop_none(body):
+    return {k: v for k, v in body.items() if v is not None}
+
+
+def not_none(val):
+    assert val is not None
+    return val
+
+class TargetBase:   
+    identifier_system = "urn:ncpi:unique-string"
+
+    @classmethod
+    def query_target_ids(cls, host, key_components):
+        #pdb.set_trace()
+        ## We don't really need the host, because we keep that with our singleton server object
+        host = host.strip("/")
+        endpoint = cls.resource_type.strip("/")
+
+        fhir_server = FhirHost.host()
+
+        url = f"{endpoint}?identifier={cls.identifier_system}|{key_components['identifier']}"
+        #pdb.set_trace()
+        payload = fhir_server.get(url)
+
+        id_list = set()
+
+        for entity in payload.entries:
+            if 'resource' in entity:
+                id = entity['resource']['id']
+                id_list.add(id)
+        return id_list
+
+    @classmethod
+    def submit(cls, host, body):
+        return submit(host, cls, body)
+
+    """ I think this will remain as is 
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        return {
+            **cls.get_key_components(record, get_target_id_from_record),
+            **cls.get_secondary_components(record, get_target_id_from_record)
+        }
+    """
 
 class Component:
     def addValuestring(value_name, value):

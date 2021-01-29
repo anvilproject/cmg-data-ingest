@@ -9,6 +9,9 @@ from ncpi_fhir_plugin.common import CONCEPT, constants
 
 from ncpi_fhir_plugin.target_api_builders.ncpi_patient import Patient
 from ncpi_fhir_plugin.target_api_builders.disease import Disease
+from ncpi_fhir_plugin.target_api_builders import TargetBase
+
+import pdb
 
 # https://www.hl7.org/fhir/valueset-observation-interpretation.html
 interpretation = {
@@ -58,30 +61,39 @@ observation_code = {
 }
 
 
-class HumanPhenotype:
+class HumanPhenotype(TargetBase):
     class_name = "human_phenotype"
     resource_type = "Observation"
     target_id_concept = CONCEPT.STUDY.PROVIDER.SUBJECT.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
+        # These are required for the variant
         assert None is not record[CONCEPT.PARTICIPANT.ID]
-        assert None is not record[CONCEPT.STUDY.ID]
+        assert None is not record[CONCEPT.STUDY.NAME]
         assert None is not record[CONCEPT.PHENOTYPE.HPO_ID]
-        return record.get(CONCEPT.PHENOTYPE.UNIQUE_KEY) or join(
-            record[CONCEPT.STUDY.ID],
-            record[CONCEPT.PARTICIPANT.ID],
-            record[CONCEPT.PHENOTYPE.HPO_ID]
-        )
+        assert None is not record[CONCEPT.PHENOTYPE.OBSERVED]
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
-        study_id = record[CONCEPT.STUDY.ID]
+        return {
+            "identifier":  join(
+                record[CONCEPT.STUDY.NAME],
+                record[CONCEPT.PARTICIPANT.ID],
+                record[CONCEPT.PHENOTYPE.HPO_ID],
+                record[CONCEPT.PHENOTYPE.OBSERVED]
+            )
+        }
+
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
         family_id = record[CONCEPT.FAMILY.ID]
         study_name = record[CONCEPT.STUDY.NAME]
         hpo_id = record[CONCEPT.PHENOTYPE.HPO_ID]
         pheno_name = record[CONCEPT.PHENOTYPE.NAME]
         observed = record[CONCEPT.PHENOTYPE.OBSERVED]
+
+        #if record[CONCEPT.PARTICIPANT.ID] == "BH9825_1" and hpo_id == "HP:0004325":
+            # pdb.set_trace()
 
         # "code": {"coding": [{"code": hpo_id}], "text": pheno_name},
         #    "interpretation": [
@@ -98,8 +110,8 @@ class HumanPhenotype:
             },
             "identifier": [
                 {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(HumanPhenotype.resource_type, key),
+                    "system" : f"{cls.identifier_system}",
+                    "value": key,
                 }
             ],
             "status": "preliminary",

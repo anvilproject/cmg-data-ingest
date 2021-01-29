@@ -9,27 +9,32 @@ from ncpi_fhir_plugin.target_api_builders.specimen import Specimen
 from ncpi_fhir_plugin.target_api_builders.discovery_variant import DiscoveryVariant
 from ncpi_fhir_plugin.target_api_builders.discovery_implication import DiscoveryImplication
 from ncpi_fhir_plugin.target_api_builders.ncpi_patient import Patient
+from ncpi_fhir_plugin.target_api_builders import TargetBase
+import pdb
 
-class DiscoveryReport:
+class DiscoveryReport(TargetBase):
     class_name = "discovery_report"
     resource_type = "DiagnosticReport"
     target_id_concept = CONCEPT.DISCOVERY.VARIANT.VARIANT_REPORT.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
         # These are required for the variant
-        assert None is not record[CONCEPT.STUDY.ID]
+        assert None is not record[CONCEPT.STUDY.NAME]
         assert None is not record[CONCEPT.PARTICIPANT.ID]
         assert None is not record[CONCEPT.DISCOVERY.VARIANT.ID]
 
-        return record.get(CONCEPT.DISCOVERY.VARIANT.VARIANT_REPORT.TARGET_SERVICE_ID) or join(
-            record[CONCEPT.STUDY.ID],
-            record[CONCEPT.PARTICIPANT.ID]
-        )
+        return {
+            "identifier":  join(
+                record[CONCEPT.STUDY.NAME],
+                record[CONCEPT.PARTICIPANT.ID]
+            )
+        }
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
-        study_id = record[CONCEPT.STUDY.ID]
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
+        study_id = record[CONCEPT.STUDY.NAME]
         patient_id = record[CONCEPT.PARTICIPANT.ID]
 
         entity = {
@@ -42,8 +47,8 @@ class DiscoveryReport:
             },
             "identifier": [
                 {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(DiscoveryReport.resource_type, key),
+                    "system" : f"{cls.identifier_system}",
+                    "value": key,
                 }
             ],
             "status": "final",
@@ -71,7 +76,7 @@ class DiscoveryReport:
             significance = None
 
             fake_row = {
-                CONCEPT.STUDY.ID: study_id,
+                CONCEPT.STUDY.NAME: study_id,
                 CONCEPT.PARTICIPANT.ID: patient_id,
                 CONCEPT.BIOSPECIMEN.ID: biospecimen_id,
                 CONCEPT.DISCOVERY.VARIANT.ID: variant_id

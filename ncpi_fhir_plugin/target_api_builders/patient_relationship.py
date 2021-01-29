@@ -7,38 +7,44 @@ import pandas as pd
 from ncpi_fhir_plugin.common import constants, CONCEPT, add_family_encoding, DEGENDERFICATION
 from ncpi_fhir_plugin.shared import join, make_identifier
 from ncpi_fhir_plugin.target_api_builders.ncpi_patient import Patient
+from ncpi_fhir_plugin.target_api_builders import TargetBase
 
 import pdb
 
-class PatientRelation:
+class PatientRelation(TargetBase):
     class_name = "family_relationship"
     resource_type = "Observation"
     target_id_concept = CONCEPT.FAMILY_RELATIONSHIP.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
+        # These are required for the variant
         assert None is not record[CONCEPT.PARTICIPANT.ID]
         assert None is not record[CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND]
         assert record[CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND].strip() != ""
         assert None is not record[CONCEPT.PARTICIPANT.PROBAND_ID]
         assert record[CONCEPT.PARTICIPANT.PROBAND_ID].strip() != ""
-        assert None is not record[CONCEPT.STUDY.ID]
+        assert None is not record[CONCEPT.STUDY.NAME]
         assert record[CONCEPT.PARTICIPANT.ID] != record[CONCEPT.PARTICIPANT.PROBAND_ID]
 
-        return join(
-            record[CONCEPT.STUDY.ID],
-            record[CONCEPT.PARTICIPANT.ID],
-            record[CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND],
-            record[CONCEPT.PARTICIPANT.PROBAND_ID]
-        )
+        return {
+            "identifier":  join(
+                record[CONCEPT.STUDY.NAME],
+                record[CONCEPT.PARTICIPANT.ID],
+                record[CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND],
+                'to',
+                record[CONCEPT.PARTICIPANT.PROBAND_ID]
+            )
+        }
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
         participant_id = record.get(CONCEPT.PARTICIPANT.ID)
         relationship = record.get(CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND)
         relationship_raw = record.get(CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND_RAW)
         proband = record.get(CONCEPT.PARTICIPANT.PROBAND_ID)
-        study_id = record[CONCEPT.STUDY.ID]
+        study_id = record[CONCEPT.STUDY.NAME]
         proband_id = get_target_id_from_record(Patient, {CONCEPT.PARTICIPANT.ID: record[CONCEPT.PARTICIPANT.PROBAND_ID]})
         #pdb.set_trace()
         rel_struct = [add_family_encoding(relationship)]
@@ -53,12 +59,18 @@ class PatientRelation:
 
         entity = {
             "resourceType": PatientRelation.resource_type,
-            "id": make_identifier(PatientRelation.resource_type, participant_id, relationship, 'to', proband),
+            "id": get_target_id_from_record(PatientRelation, record),
             "meta": {
                 "profile": [
                     "http://fhir.ncpi-project-forge.io/StructureDefinition/ncpi-family-relationship"
                 ]
             },
+            "identifier": [
+                {
+                    "system" : f"{cls.identifier_system}",
+                    "value": key
+                }
+            ],
             "code": {
                 "coding": [
                   {

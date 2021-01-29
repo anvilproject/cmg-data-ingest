@@ -15,32 +15,37 @@ from ncpi_fhir_plugin.target_api_builders import (
     addReference,
     addValuestring,
     addValuebool)
+from ncpi_fhir_plugin.target_api_builders import TargetBase
 import pdb
 
 
 # Eventually, this needs to become sequencing_task, but doing so will require either
 # purging the current tasks in the remote server or making some changes to the 
 # cache db (basically renaming the tables))
-class SequencingTask:
+class SequencingTask(TargetBase):
     class_name = "sequencing_data"
     resource_type = "Task"
     target_id_concept = CONCEPT.SEQUENCING.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
         assert None is not record[CONCEPT.SEQUENCING.ID]
 
         # I think it's safe to say that we'll need a DRS URI at this point
         # we may switch to an alternate approach at a later date, though
         assert None is not record[CONCEPT.SEQUENCING.DRS_URI]
 
-        return record.get(CONCEPT.SEQUENCING.UNIQUE_KEY) or join(
-            record[CONCEPT.SEQUENCING.ID]
-        )
+        return {
+            "identifier":  join(
+                record[CONCEPT.SEQUENCING.ID]
+            )
+        }
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
-        study_id = record[CONCEPT.STUDY.ID]
+
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
+        study_id = record[CONCEPT.STUDY.NAME]
         seq_filename = record.get(CONCEPT.SEQUENCING_GENOMIC_FILE.ID)
         seq_id = record.get(CONCEPT.SEQUENCING.ID)
         seq_center = record.get(CONCEPT.SEQUENCING.CENTER.ID)
@@ -76,8 +81,8 @@ class SequencingTask:
             },
             "identifier": [
                 {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(SequencingTask.resource_type, seq_id),
+                    "system" : f"{cls.identifier_system}",
+                    "value": key,
                 },
             ],           "status": "complete",
             "description": "Generate sequence data for use by researchers",

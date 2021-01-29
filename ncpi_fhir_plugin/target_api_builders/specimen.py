@@ -5,6 +5,7 @@ from rows of tabular participant biospecimen adata.
 from ncpi_fhir_plugin.common import constants, CONCEPT
 from ncpi_fhir_plugin.shared import join
 from ncpi_fhir_plugin.target_api_builders.ncpi_patient import Patient
+from ncpi_fhir_plugin.target_api_builders import TargetBase
 
 # https://www.hl7.org/fhir/v2/0487/index.html
 specimen_type = {
@@ -25,23 +26,25 @@ specimen_type = {
     },
 }
 
-class Specimen:
+class Specimen(TargetBase):
     class_name = "specimen"
     resource_type = "Specimen"
     target_id_concept = CONCEPT.BIOSPECIMEN.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
-
-        #assert None is not record[CONCEPT.PARTICIPANT.ID]
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
         assert None is not record[CONCEPT.BIOSPECIMEN.ID]
-        return record.get(CONCEPT.BIOSPECIMEN.UNIQUE_KEY) or join(
-            record[CONCEPT.STUDY.ID], record[CONCEPT.BIOSPECIMEN.ID]
-        )
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
-        study_id = record[CONCEPT.STUDY.ID]
+        return {
+            "identifier":  join(
+                record[CONCEPT.STUDY.NAME], record[CONCEPT.BIOSPECIMEN.ID]
+            )
+        }
+
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
+        study_id = record[CONCEPT.STUDY.NAME]
         biospecimen_id = record.get(CONCEPT.BIOSPECIMEN.ID)
         dbgap_id = record.get(CONCEPT.BIOSPECIMEN.DBGAP_ID)
         event_age_days = record.get(CONCEPT.BIOSPECIMEN.EVENT_AGE_DAYS)
@@ -67,8 +70,8 @@ class Specimen:
                     "value": biospecimen_id,
                 },
                 {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(Specimen.resource_type, key),
+                    "system" : f"{cls.identifier_system}",
+                    "value": key,
                 },
             ],
             "subject": {

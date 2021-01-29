@@ -43,28 +43,35 @@ import sys
 from ncpi_fhir_plugin.shared import join, make_identifier
 from ncpi_fhir_plugin.common import constants, CONCEPT, add_loinc_coding
 from ncpi_fhir_plugin.target_api_builders.specimen import Specimen
+from ncpi_fhir_plugin.target_api_builders import TargetBase
+import pdb
 
-class DiscoveryVariant:
+class DiscoveryVariant(TargetBase):
     class_name = "discovery_variant"
     resource_type = "Observation"
     target_id_concept = CONCEPT.DISCOVERY.VARIANT.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
+        # These are required for the variant
+        assert None is not record[CONCEPT.STUDY.NAME]
         assert None is not record[CONCEPT.PARTICIPANT.ID]
-        assert None is not record[CONCEPT.STUDY.ID]
         assert None is not record[CONCEPT.DISCOVERY.VARIANT.ID]
 
-        return record.get(CONCEPT.DISCOVERY.VARIANT.UNIQUE_KEY) or join(
-            record[CONCEPT.STUDY.ID],
-            record[CONCEPT.BIOSPECIMEN.ID],
-            record[CONCEPT.PARTICIPANT.ID],
-            record[CONCEPT.DISCOVERY.VARIANT.ID]
-        )
+        return {
+            "identifier":  join(
+                record[CONCEPT.STUDY.NAME],
+                record[CONCEPT.BIOSPECIMEN.ID],
+                record[CONCEPT.PARTICIPANT.ID],
+                record[CONCEPT.DISCOVERY.VARIANT.ID]
+            )
+        }
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
-        study_id = record[CONCEPT.STUDY.ID]
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
+        study_id = record[CONCEPT.STUDY.NAME]
+        #pdb.set_trace()
         biospecimen_id = get_target_id_from_record(Specimen, record)
         subject_id = record[CONCEPT.PARTICIPANT.ID]
         variant_id = record[CONCEPT.DISCOVERY.VARIANT.ID]         
@@ -98,8 +105,8 @@ class DiscoveryVariant:
             },
             "identifier": [
                 {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(DiscoveryVariant.resource_type, key),
+                    "system" : f"{cls.identifier_system}",
+                    "value": key,
                 }
             ],
             "status": "final",

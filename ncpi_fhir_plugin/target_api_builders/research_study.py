@@ -15,23 +15,28 @@ from ncpi_model_forge.ingest_plugin.target_api_builders.practitioner import (
 )"""
 from ncpi_fhir_plugin.shared import join, make_identifier
 from ncpi_fhir_plugin.common import constants, CONCEPT
+from ncpi_fhir_plugin.target_api_builders import TargetBase
 
-class ResearchStudy:
+class ResearchStudy(TargetBase):
     class_name = "research_study"
     resource_type = "ResearchStudy"
     target_id_concept = CONCEPT.STUDY.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
-        assert None is not record[CONCEPT.STUDY.ID]
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
+        # These are required for the variant
+        assert None is not record[CONCEPT.STUDY.NAME]
 
-        return record.get(CONCEPT.STUDY.UNIQUE_KEY) or join(
-            record[CONCEPT.STUDY.ID]
-        )
+        return {
+            "identifier":  join(
+                record[CONCEPT.STUDY.NAME]
+            )
+        }
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
-        study_id = record[CONCEPT.STUDY.ID]
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
+        study_id = record[CONCEPT.STUDY.NAME]
         study_name = record.get(CONCEPT.STUDY.NAME)
         attribution = record.get(CONCEPT.STUDY.ATTRIBUTION)
         short_name = record.get(CONCEPT.STUDY.SHORT_NAME)
@@ -54,8 +59,8 @@ class ResearchStudy:
                     "value": study_id,
                 },
                 {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(ResearchStudy.resource_type, key),
+                    "system" : f"{cls.identifier_system}",
+                    "value": key,
                 },
             ],
             "title": study_name,

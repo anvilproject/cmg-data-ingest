@@ -14,23 +14,27 @@ from ncpi_model_forge.ingest_plugin.target_api_builders.practitioner import (
 )"""
 from ncpi_fhir_plugin.shared import join, make_identifier
 from ncpi_fhir_plugin.common import constants, CONCEPT
+from ncpi_fhir_plugin.target_api_builders import TargetBase
 
-class SequencingCenter:
+class SequencingCenter(TargetBase):
     class_name = "sequencing_center"
     resource_type = "Organization"
     target_id_concept = CONCEPT.SEQUENCING.CENTER.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
-        assert None is not record[CONCEPT.SEQUENCING.CENTER.ID]
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
+        # These are required for the variant
+        assert None is not record[CONCEPT.SEQUENCING.CENTER.ID] and record[CONCEPT.SEQUENCING.CENTER.ID] != ""
 
-        return record.get(CONCEPT.SEQUENCING.CENTER.UNIQUE_KEY) or join(
-            record[CONCEPT.SEQUENCING.CENTER.ID]
-        )
+        return {
+            "identifier":  join(
+                record[CONCEPT.SEQUENCING.CENTER.ID]
+            )
+        }
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
-        study_id = record[CONCEPT.STUDY.ID]
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
         study_name = record.get(CONCEPT.STUDY.NAME)
         seq_center = record.get(CONCEPT.SEQUENCING.CENTER.ID)
 
@@ -44,8 +48,8 @@ class SequencingCenter:
             },
             "identifier": [
                 {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(SequencingCenter.resource_type, key),
+                    "system" : f"{cls.identifier_system}",
+                    "value": key,
                 },
             ],
             "name": seq_center,

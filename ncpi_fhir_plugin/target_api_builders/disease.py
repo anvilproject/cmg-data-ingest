@@ -13,6 +13,7 @@ HPO Absent/Present will reference the
 from ncpi_fhir_plugin.common import CONCEPT, constants
 from ncpi_fhir_plugin.target_api_builders.ncpi_patient import Patient
 from ncpi_fhir_plugin.shared import join
+from ncpi_fhir_plugin.target_api_builders import TargetBase
 
 affected_status_lookup = {
     constants.AFFECTED_STATUS.AFFECTED: {
@@ -32,29 +33,32 @@ affected_status_lookup = {
     },
 }
 
-class Disease:
+class Disease(TargetBase):
     class_name = "disease"
     resource_type = "Condition"
     target_id_concept = CONCEPT.DIAGNOSIS.TARGET_SERVICE_ID
 
-    @staticmethod
-    def build_key(record):
-        # For now, I'm assuming that family+id are necessary to be unique, but that may not be true
+    @classmethod
+    def get_key_components(cls, record, get_target_id_from_record):
+        # These are required for the variant
         assert None is not record[CONCEPT.PARTICIPANT.ID]
-        assert None is not record[CONCEPT.STUDY.ID]
+        assert None is not record[CONCEPT.STUDY.NAME]
         assert None is not record[CONCEPT.DIAGNOSIS.NAME]
         assert None is not record[CONCEPT.FAMILY.ID]
         assert None is not record[CONCEPT.DIAGNOSIS.DESCRIPTION] and record[CONCEPT.DIAGNOSIS.DESCRIPTION].strip() != ""
-        return record.get(CONCEPT.DIAGNOSIS.UNIQUE_KEY) or join(
-            record[CONCEPT.STUDY.ID],
-            record[CONCEPT.FAMILY.ID],
-            record[CONCEPT.PARTICIPANT.ID],
-            record[CONCEPT.DIAGNOSIS.NAME],
-        )
+        return {
+            "identifier":  join(
+                record[CONCEPT.STUDY.NAME],
+                record[CONCEPT.FAMILY.ID],
+                record[CONCEPT.PARTICIPANT.ID],
+                record[CONCEPT.DIAGNOSIS.NAME],
+            )
+        }
 
-    @staticmethod
-    def build_entity(record, key, get_target_id_from_record):
-        study_id = record[CONCEPT.STUDY.ID]
+    @classmethod
+    def build_entity(cls, record, get_target_id_from_record):
+        key = cls.get_key_components(record, get_target_id_from_record)['identifier']
+        study_id = record[CONCEPT.STUDY.NAME]
         family_id = record[CONCEPT.FAMILY.ID]
         study_name = record[CONCEPT.STUDY.NAME]
         disease_id = record[CONCEPT.DIAGNOSIS.DISEASE_ID]
@@ -83,8 +87,8 @@ class Disease:
             },
             "identifier": [
                 {
-                    "system": "urn:ncpi:unique-string",
-                    "value": join(Disease.resource_type, study_name, key),
+                    "system" : f"{cls.identifier_system}",
+                    "value": key,
                 }
             ],
             "category": [
