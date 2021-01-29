@@ -78,7 +78,7 @@ class Patient:
     @classmethod
     def write_default_header(self, writer):
         writer.writerow([
-            CONCEPT.STUDY.ID,
+            CONCEPT.STUDY.NAME,
             CONCEPT.FAMILY.ID,
             CONCEPT.PARTICIPANT.MOTHER_ID,
             CONCEPT.PARTICIPANT.FATHER_ID,

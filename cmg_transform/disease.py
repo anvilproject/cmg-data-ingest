@@ -17,7 +17,7 @@ class Disease:
         self.alternate_disease_names = ""
 
 
-        self.disease_description = Transform.ExtractVar(row, 'disease_description')
+        self.disease_description = Transform.ExtractVar(row, 'disease_description').replace("\n", ' ')
         self.disease_name = self.disease_description
         self.disease_system = None
         self.phenotype_description = Transform.ExtractVar(row, 'phenotype_description')

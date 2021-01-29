@@ -44,7 +44,10 @@ class DiscoveryVariant:
         self.sv_name = Transform.ExtractVar(row, 'sv_name')
         self.sv_type = Transform.ExtractVar(row, 'sv_type')
         self.significance = Transform.ExtractVar(row, 'significance', constants.DISCOVERY.VARIANT.SIGNIFICANCE)
-        self.variant_id = f"{self.chrom}|{self.pos}|{self.ref}|{self.alt}"
+        self.variant_id = None
+        if self.chrom is not None:
+            self.variant_id = f"{self.chrom}|{self.pos}|{self.ref}|{self.alt}"
+
 
         if self.gene:
             try:
@@ -56,7 +59,7 @@ class DiscoveryVariant:
 
         # if we do get a variant, the ID can be used to construct a URL for clinvar entry, which 
         # may be quite informative
-        if self.variant_id is None:
+        if self.chrom is not None and self.variant_id is None:
             print(f"Get Variant returned nothing: {self.hgvsc} : {self.hgvsp} : {self.transcript}")
             sys.exit(1)
 
@@ -66,39 +69,44 @@ class DiscoveryVariant:
         self.inheritance = Transform.ExtractVar(row, 'inheritance_description')
 
     def add_variant_ids(self, variant_lkup):
-        variant_lkup[self.id].append(f"{self.variant_id}+{self.sample_id}")
-        if self.inheritance and self.inheritance.strip() != "":
-            variant_lkup[self.id].append(f"{self.variant_id}+{self.sample_id}+{self.inheritance}")
+        if self.variant_id is not None:
+            variant_lkup[self.id].append(f"{self.variant_id}+{self.sample_id}")
+            if self.inheritance and self.inheritance.strip() != "":
+                variant_lkup[self.id].append(f"{self.variant_id}+{self.sample_id}+{self.inheritance}")
 
     def writerow(self, writer, study_name):
-        writer.writerow([
-            self.id,
-            study_name,
-            self.sample_id,
-            self.variant_id,
-            self.gene,
-            self.gene_class,
-            self.gene_code,
-            self.ref_seq,
-            self.chrom,
-            self.pos,
-            self.ref,
-            self.alt,
-            self.zygosity,
-            self.hgvsc,
-            self.hgvsp,
-            self.transcript,
-            self.sv_name,
-            self.sv_type,
-            self.significance,
-            self.inheritance
-        ])
+        """Returns True if there was a variant written to file"""
+        if self.variant_id is not None:
+            writer.writerow([
+                self.id,
+                study_name,
+                self.sample_id,
+                self.variant_id,
+                self.gene,
+                self.gene_class,
+                self.gene_code,
+                self.ref_seq,
+                self.chrom,
+                self.pos,
+                self.ref,
+                self.alt,
+                self.zygosity,
+                self.hgvsc,
+                self.hgvsp,
+                self.transcript,
+                self.sv_name,
+                self.sv_type,
+                self.significance,
+                self.inheritance
+            ])
+            return True
+        return False
 
     @classmethod
     def writeheader(cls, writer):
         writer.writerow([
             CONCEPT.PARTICIPANT.ID,
-            CONCEPT.STUDY.ID,
+            CONCEPT.STUDY.NAME,
             CONCEPT.BIOSPECIMEN.ID,
             CONCEPT.DISCOVERY.VARIANT.ID,
             CONCEPT.DISCOVERY.GENE.ID,
