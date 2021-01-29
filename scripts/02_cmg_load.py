@@ -13,6 +13,8 @@ from fhir_walk.config import DataConfig
 from fhir_walk.fhir_host import FhirHost
 import ncpi_fhir_plugin.fhir_plugin as fhir # import SetAuthorization, remote_authorization
 
+import pdb
+
 from argparse import ArgumentParser, FileType
 
 if __name__ == "__main__":
@@ -46,7 +48,7 @@ if __name__ == "__main__":
                 help=f"Remote configuration to be used")
     parser.add_argument("-d", 
                 "--dataset", 
-                choices=ds_options,
+                choices=ds_options + ['ALL'],
                 default=[],
                 help=f"Dataset config to be used",
                 action='append')
@@ -67,11 +69,14 @@ if __name__ == "__main__":
     datasets = args.dataset 
     if len(datasets) == 0:
         datasets.append('FAKE-CMG')
+    elif "ALL" in datasets:
+        datasets = ds_options
 
     path_to_my_target_service_plugin = "ncpi_fhir_plugin/fhir_plugin.py"
     target_service_base_url = fhir_host.target_service_url
  
     for study_id in sorted(datasets):
+        print(f"Loading '{study_id}'")
         logging.basicConfig(filename=f'{args.out}/{study_id}-{args.env}-load.log',
                                 filemode='w',
                                 format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
@@ -115,7 +120,7 @@ if __name__ == "__main__":
             discovery_report = read_df(f"{input_file_dir}/discovery_report.tsv")
 
             basic_reports["discovery_report"] = discovery_report
-
+        #pdb.set_trace()
         outcome = LoadStage(
             path_to_my_target_service_plugin,
             target_service_base_url,
@@ -123,17 +128,4 @@ if __name__ == "__main__":
             study_id,
             str(path_to_cache_storage_directory)
         ).run(basic_reports)
-        logger = logging.getLogger(__name__)
-        sleep(1)
 
-        if outcome:
-            print("I think it all worked")
-            logger.info("✅ Ingest pipeline passed validation!")
-        else:
-            print("Something seemed to go wrong!")
-            print(outcome)
-            logger.error(
-                "❌ Ingest pipeline failed validation! "
-                f"See logs/load.log for details"
-            )
-            sys.exit(1)
