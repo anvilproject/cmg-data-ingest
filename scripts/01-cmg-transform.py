@@ -147,14 +147,14 @@ def Run(output, study_name, dataset, delim=None):
                 for row in reader:
                     Transform._linenumber += 1
                     var = DiscoveryVariant(row)
-                    var.writerow(writer, study_name)
-                    var.add_variant_ids(variants)
+                    if var.writerow(writer, study_name):
+                        var.add_variant_ids(variants)
 
 
             with open(output / "discovery_report.tsv", 'wt') as outf:
                 writer = csv.writer(outf, delimiter='\t', quotechar='"')
                 writer.writerow([
-                        CONCEPT.STUDY.ID,
+                        CONCEPT.STUDY.NAME,
                         CONCEPT.PARTICIPANT.ID,
                         CONCEPT.DISCOVERY.VARIANT.ID
                 ])
