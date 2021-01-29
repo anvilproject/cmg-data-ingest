@@ -49,7 +49,7 @@ def test_variant_details(config, study, transformed_dir):
             specimen = specimens[specimen_id]
 
             variants = Variant.VariantsBySpecimen(specimen.id, host)
-            id = f"Observation|{study.id}|{specimen_id}|{subject_id}|{variant_id}"
+            id = f"{study.id}|{specimen_id}|{subject_id}|{variant_id}"
 
             print(f"The Specimen ID {specimen.id} -- {len(variants)} variants returned")
             #print(f"The variant ID {variant.id}")
