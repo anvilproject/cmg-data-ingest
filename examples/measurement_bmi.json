@@ -1,0 +1,49 @@
+{
+  "host": "http://localhost:8000",
+  "type": "measurement",
+  "body": {
+    "resourceType": "Observation",
+    "id": "135566",
+    "meta": {
+      "profile": [
+        "http://hl7.org/fhir/StructureDefinition/Observation"
+      ]
+    },
+    "identifier": [
+      {
+        "system": "urn:ncpi:unique-string",
+        "value": "FAKE-CMG|1|1|39156-5"
+      }
+    ],
+    "status": "final",
+    "code": {
+      "coding": [
+        {
+          "system": "http://loinc.org",
+          "code": "39156-5",
+          "display": "Body mass index (BMI) [Ratio]"
+        },
+        {
+          "system": "https://www.ohdsi.org",
+          "code": "3038553",
+          "display": "Body mass index (BMI) [Ratio]"
+        }
+      ],
+      "text": "Body mass index (BMI) [Ratio]"
+    },
+    "subject": {
+      "reference": "Patient/30457"
+    },
+    "valueQuantity": {
+      "value": 13.53
+    },
+    "derivedFrom": [
+      {
+        "reference": "Observation/135564"
+      },
+      {
+        "reference": "Observation/135565"
+      }
+    ]
+  }
+}

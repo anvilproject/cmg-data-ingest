@@ -1,0 +1,42 @@
+
+{
+  "host": "http://localhost:8000",
+  "type": "measurement",
+  "body": {
+    "resourceType": "Observation",
+    "id": "135564",
+    "meta": {
+      "profile": [
+        "http://hl7.org/fhir/StructureDefinition/Observation"
+      ]
+    },
+    "identifier": [
+      {
+        "system": "urn:ncpi:unique-string",
+        "value": "FAKE-CMG|1|1|8302-2"
+      }
+    ],
+    "status": "final",
+    "code": {
+      "coding": [
+        {
+          "system": "http://loinc.org",
+          "code": "8302-2",
+          "display": "Body height"
+        },
+        {
+          "system": "https://www.ohdsi.org",
+          "code": "3036277",
+          "display": "Body height"
+        }
+      ],
+      "text": "Body height"
+    },
+    "subject": {
+      "reference": "Patient/18587"
+    },
+    "valueQuantity": {
+      "value": 82.0
+    }
+  }
+}
