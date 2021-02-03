@@ -35,8 +35,24 @@
       "reference": "Patient/30457"
     },
     "valueQuantity": {
-      "value": 13.53
+      "value": 13.53,
+      "unit": "kg/m2"
     },
+    "extension": [
+      {
+        "url": "http://fhir.ncpi-project-forge.io/StructureDefinition/visit-number",
+        "valueInteger": 1
+      },
+      {
+        "url": "http://fhir.ncpi-project-forge.io/StructureDefinition/age-at-event",
+        "valueAge": {
+          "value": 1.911,
+          "unit": "a",
+          "system": "http://unitsofmeasure.org",
+          "code": "years"
+        }
+      }
+    ],
     "derivedFrom": [
       {
         "reference": "Observation/135564"

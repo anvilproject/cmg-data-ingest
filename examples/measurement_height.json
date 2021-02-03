@@ -35,8 +35,24 @@
     "subject": {
       "reference": "Patient/18587"
     },
-    "valueQuantity": {
-      "value": 82.0
+ 		"valueQuantity": {
+        "value": 82.0,
+        "unit": "cm"
+      },
+      "extension": [
+        {
+          "url": "http://fhir.ncpi-project-forge.io/StructureDefinition/visit-number",
+          "valueInteger": 1
+        },
+        {
+          "url": "http://fhir.ncpi-project-forge.io/StructureDefinition/age-at-event",
+          "valueAge": {
+            "value": 1.911,
+            "unit": "a",
+            "system": "http://unitsofmeasure.org",
+            "code": "years"
+          }
+        }
+      ]
     }
   }
-}
