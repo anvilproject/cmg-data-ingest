@@ -6,6 +6,11 @@ from ncpi_fhir_plugin.common import CONCEPT, constants
 from csv import DictReader
 from collections import defaultdict
 from cmg_transform.change_logger import ChangeLog
+import sys
+import pdb 
+
+from colorama import init,Fore,Back,Style
+init()
 
 def ParseDate(value):
     # 20160525  -- May need to test for "-" and "/" or other characters
@@ -45,7 +50,12 @@ class Transform:
             "American Indian or Alaskan Native": constants.RACE.NATIVE_AMERICAN,
             "Unknown": constants.COMMON.UNKNOWN,
             'Other': constants.COMMON.OTHER,
+            'Not Reported': constants.COMMON.NOT_REPORTED,
+            'Not Assessed': constants.COMMON.NOT_ASSESSED,
             '': None
+        },
+        constants.ETHNICITY : {
+            "Unknown": constants.COMMON.UNKNOWN
         },
         constants.GENDER : {
             "Intersex": constants.COMMON.OTHER,
@@ -160,6 +170,7 @@ class Transform:
                 # if this excepts, then we need to figure out what is going wrong
                 # Eventually, this will become it's own exception which can be handled
                 # nicely at the application layer
+                sys.stderr.write(f"Unmatched entry, {Fore.RED}{propname}{Fore.RESET}. Viable choices include: {Fore.GREEN}{', '.join([x for x in dir(constobj) if x[0] != '_']) }{Fore.RESET}\n")
                 raise e         
         return None
 
@@ -192,6 +203,7 @@ class Transform:
 
         fieldnames = []
         for colname in reader.fieldnames:
+            colname = colname.lower()
             if colname in Transform._field_map:
                 fieldnames.append(Transform._field_map[colname])
                 print(f"Transforming {csv_file.name}:{colname} into {Transform._field_map[colname]}")
