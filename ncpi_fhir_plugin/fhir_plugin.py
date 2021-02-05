@@ -18,6 +18,7 @@ import os
 from ncpi_fhir_utility.client import FhirApiClient
 
 from ncpi_fhir_plugin.target_api_builders.ncpi_patient import Patient
+from ncpi_fhir_plugin.target_api_builders.basic_patient import BasicPatient
 from ncpi_fhir_plugin.target_api_builders.research_subject import ResearchSubject
 from ncpi_fhir_plugin.target_api_builders.research_study import ResearchStudy
 from ncpi_fhir_plugin.target_api_builders.patient_relationship import PatientRelation
@@ -33,6 +34,7 @@ from ncpi_fhir_plugin.target_api_builders.sequencing_file_info import Sequencing
 from ncpi_fhir_plugin.target_api_builders.discovery_variant import DiscoveryVariant
 from ncpi_fhir_plugin.target_api_builders.discovery_implication import DiscoveryImplication 
 from ncpi_fhir_plugin.target_api_builders.discovery_report import DiscoveryReport 
+from ncpi_fhir_plugin.target_api_builders.measurement import Measurement
 
 from ncpi_fhir_plugin import common
 
@@ -42,6 +44,7 @@ import traceback
 
 all_targets = [
     Patient,
+    BasicPatient,
     PatientRelation,
     ResearchStudy,
     ResearchSubject,
@@ -56,7 +59,8 @@ all_targets = [
     SequencingFileInfo,
     DiscoveryVariant,
     DiscoveryImplication,
-    DiscoveryReport
+    DiscoveryReport,
+    Measurement
 ]
 #print(inspect.getsource(Patient.build_entity))
 

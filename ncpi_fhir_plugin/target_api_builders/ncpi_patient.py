@@ -157,6 +157,7 @@ class Patient(TargetBase):
 
         return {
             "identifier":  join(
+                record[CONCEPT.STUDY.NAME],
                 record[CONCEPT.PARTICIPANT.ID]
             )
         }

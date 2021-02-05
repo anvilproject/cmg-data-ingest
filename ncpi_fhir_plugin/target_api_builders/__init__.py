@@ -4,6 +4,8 @@ from pprint import pformat
 from requests import RequestException
 import sys
 import pdb 
+from colorama import init,Fore,Back,Style
+init()
 
 clients = {}
 def submit(host, entity_class, body):
@@ -99,6 +101,7 @@ def not_none(val):
 
 class TargetBase:   
     identifier_system = "urn:ncpi:unique-string"
+    _reported_work = False
 
     @classmethod
     def query_target_ids(cls, host, key_components):
@@ -124,6 +127,13 @@ class TargetBase:
     @classmethod
     def submit(cls, host, body):
         return submit(host, cls, body)
+
+    @classmethod
+    def report(cls, study):
+        if not cls._reported_work:
+            sys.stderr.write(f"Processing {Fore.CYAN}{study}{Fore.RESET} -- {Fore.GREEN}{cls.__name__}{Fore.RESET}")
+            cls._reported_work = True
+
 
     """ I think this will remain as is 
     @classmethod
