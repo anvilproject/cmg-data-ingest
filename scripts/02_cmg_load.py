@@ -105,6 +105,7 @@ if __name__ == "__main__":
             "specimen": specimens,
             'human_phenotype': hpo,
             'sequencing_file': sequencing_data,
+            'sequencing_file_no_drs': sequencing_data,
             'sequencing_data': sequencing_data,
             "sequencing_file_info": sequencing_data,           
         }

@@ -192,10 +192,10 @@ if __name__ == "__main__":
         datasets.append('FAKE-CMG')
 
     for study in sorted(datasets):
-        ChangeLog.InitDB(args.out, study, purge_priors=True)
-
         dirname = Path(f"{args.out}/{study}/transformed")
         dirname.mkdir(parents=True, exist_ok=True)
+        ChangeLog.InitDB(args.out, study, purge_priors=True)
+
         Run(dirname, study, config.get_dataset(study))
 
     # Write the term cache to file since the API can sometimes be unresponsive
