@@ -10,7 +10,7 @@ init()
 clients = {}
 def submit(host, entity_class, body):
     global fhir_server
-    #print(fhir_server)
+
     # default to...dev environment
     fhir_server = FhirHost.host()
 
@@ -34,7 +34,8 @@ def submit(host, entity_class, body):
     if fhir_server.cookie:
         cheaders['cookie'] = fhir_server.cookie
 
-    # print(cheaders)
+    if fhir_server.google_identity:
+        cheaders['Authorization'] = fhir_server.get_google_identity()
 
     success, result = clients[host].send_request(
         verb, api_path, json=body, headers=cheaders
