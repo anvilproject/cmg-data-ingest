@@ -16,6 +16,7 @@ from ncpi_fhir_plugin.target_api_builders import (
     addValuestring,
     addValuebool)
 from ncpi_fhir_plugin.target_api_builders import TargetBase
+from ncpi_fhir_plugin.target_api_builders.sequencing_file_no_drs import SequencingFileNoDrs
 import pdb
 
 
@@ -61,6 +62,14 @@ class SequencingTask(TargetBase):
         functional_equivalence_standard = record.get(CONCEPT.SEQUENCING.FUNCTIONAL_EQUIVALENCE_PIPELINE)
         data_date_generation = record.get(CONCEPT.SEQUENCING.DATE)
 
+
+        seq_file_id = get_target_id_from_record(SequencingFile, record)
+
+        #pdb.set_trace()
+        if record[CONCEPT.SEQUENCING.DRS_URI].strip() == "":
+            seq_file_id = get_target_id_from_record(SequencingFileNoDrs, record)
+
+
         # In the event that our specimen ID doesn't work, let's see if it's under
         # sample ID. This was used during some hurried push to get some messy 
         # data into a fhir server, so it's probably no longer necessary. But, will
@@ -91,13 +100,13 @@ class SequencingTask(TargetBase):
                 "display" : "Specimen"
             },
             "owner" : {
-                "reference": f"{SequencingCenter.resource_type}/{seq_center}",
+                "reference": f"{SequencingCenter.resource_type}/{get_target_id_from_record(SequencingCenter, record)}",
                 "display": seq_center
             },
             "intent": "order",
             "status": status,
             "output": [ 
-                addReference("Sequence Data Filename", f"{SequencingFile.resource_type}/{get_target_id_from_record(SequencingFile, record)}")
+                addReference("Sequence Data Filename", f"{SequencingFile.resource_type}/{seq_file_id}")
             ],
             "input": []
         }

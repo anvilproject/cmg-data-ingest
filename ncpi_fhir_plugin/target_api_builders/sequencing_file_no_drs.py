@@ -10,8 +10,6 @@ from ncpi_fhir_plugin.target_api_builders.specimen import Specimen
 from ncpi_fhir_plugin.target_api_builders.ncpi_patient import Patient
 from ncpi_fhir_plugin.target_api_builders import TargetBase
 
-import pdb
-
 class SequencingFileNoDrs(TargetBase):
     class_name = "sequencing_file_no_drs"
     resource_type = "DocumentReference"
@@ -21,10 +19,13 @@ class SequencingFileNoDrs(TargetBase):
     def get_key_components(cls, record, get_target_id_from_record):
         # These are required for the variant
         assert None is not record[CONCEPT.SEQUENCING.ID]
-        assert None is record[CONCEPT.SEQUENCING.DRS_URI]
+
+        drs_uri = record.get(CONCEPT.SEQUENCING.DRS_URI)
+        assert drs_uri is None or drs_uri.strip() == ""
 
         return {
             "identifier":  join(
+                "NO-DRS", 
                 record[CONCEPT.SEQUENCING_GENOMIC_FILE.ID]
             )
         }
@@ -43,8 +44,8 @@ class SequencingFileNoDrs(TargetBase):
         drs_uri = record.get(CONCEPT.SEQUENCING.DRS_URI)
 
         entity = {
-            "resourceType": SequencingFile.resource_type,
-            "id": get_target_id_from_record(SequencingFile, record),
+            "resourceType": SequencingFileNoDrs.resource_type,
+            "id": get_target_id_from_record(SequencingFileNoDrs, record),
             "meta": {
                 "profile": [
                     f"http://hl7.org/fhir/StructureDefinition/{SequencingFileNoDrs.resource_type}"
@@ -53,7 +54,7 @@ class SequencingFileNoDrs(TargetBase):
             "status": "current",
             "author" : [
                 {
-                    "reference": f"{SequencingCenter.resource_type}/{seq_center}",
+                    "reference": f"{SequencingCenter.resource_type}/{get_target_id_from_record(SequencingCenter, record)}",
                     "display": seq_center
                 }
             ],
