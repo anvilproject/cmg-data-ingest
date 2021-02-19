@@ -16,6 +16,7 @@ from ncpi_model_forge.ingest_plugin.target_api_builders.practitioner import (
 from ncpi_fhir_plugin.shared import join, make_identifier
 from ncpi_fhir_plugin.common import constants, CONCEPT
 from ncpi_fhir_plugin.target_api_builders import TargetBase
+import pdb
 
 class ResearchStudy(TargetBase):
     class_name = "research_study"
@@ -47,7 +48,7 @@ class ResearchStudy(TargetBase):
 
         entity = {
             "resourceType": ResearchStudy.resource_type,
-            "id": make_identifier(study_id),
+            "id": get_target_id_from_record(ResearchStudy, record),
             "meta": {
                 "profile": [
                     "http://hl7.org/fhir/StructureDefinition/ResearchStudy"

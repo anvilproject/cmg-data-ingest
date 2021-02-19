@@ -45,8 +45,13 @@ class PatientRelation(TargetBase):
         relationship_raw = record.get(CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND_RAW)
         proband = record.get(CONCEPT.PARTICIPANT.PROBAND_ID)
         study_id = record[CONCEPT.STUDY.NAME]
-        proband_id = get_target_id_from_record(Patient, {CONCEPT.PARTICIPANT.ID: record[CONCEPT.PARTICIPANT.PROBAND_ID]})
-        #pdb.set_trace()
+
+        proband_record = {
+            CONCEPT.PARTICIPANT.ID: record[CONCEPT.PARTICIPANT.PROBAND_ID],
+            CONCEPT.STUDY.NAME: record[CONCEPT.STUDY.NAME]
+        }
+        proband_id = get_target_id_from_record(Patient, proband_record)
+
         rel_struct = [add_family_encoding(relationship)]
 
         # Add in the gender neutral terms
