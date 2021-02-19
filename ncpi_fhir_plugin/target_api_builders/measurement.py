@@ -117,7 +117,6 @@ class Measurement(TargetBase):
         other_ids = []
 
         if derived_from:
-            #pdb.set_trace()
             # We should be able to handle spotty parents, but also skip it
             # altogether if they simply don't exist
             derived_refs = []
@@ -128,9 +127,7 @@ class Measurement(TargetBase):
                     CONCEPT.PARTICIPANT.VISIT_NUMBER: visit_number,
                     CONCEPT.PARTICIPANT.MEASUREMENT.CODE: other             
                 }
-                #print(fake_row)
                 other_id = get_target_id_from_record(Measurement, fake_row)
-                #print(other_id)
                 if other_id:
                     other_ids.append(other_id)
                     derived_refs.append({
@@ -141,6 +138,5 @@ class Measurement(TargetBase):
             if len(derived_refs) > 0:
                 entity['derivedFrom'] = derived_refs
 
-        #print(f"{record[CONCEPT.PARTICIPANT.ID]} {measurement_name} {measurement_code}@{visit_number} :: {','.join(other_ids)} ")
         return entity
 

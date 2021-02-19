@@ -176,7 +176,6 @@ class Patient(TargetBase):
         dbgap_study_id = record.get(CONCEPT.DBGAP_STUDY_ID)
         dbgap_id = record.get(CONCEPT.DBGAP_ID)
         age_at_last_observation = record.get(CONCEPT.PARTICIPANT.AGE_AT_LAST_OBSERVATION)
-        #print(f">>> {get_target_id_from_record}")
 
         unique_id = get_target_id_from_record(Patient, record)
         entity = {

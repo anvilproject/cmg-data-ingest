@@ -33,7 +33,6 @@ class BasicPatient(TargetBase):
 
     @classmethod
     def build_entity(cls, record, get_target_id_from_record):
-        #pdb.set_trace()
         key = cls.get_key_components(record, get_target_id_from_record)['identifier']
 
         study_id = record[CONCEPT.STUDY.ID]
@@ -43,7 +42,6 @@ class BasicPatient(TargetBase):
         race = record.get(CONCEPT.PARTICIPANT.RACE)
         gender = record.get(CONCEPT.PARTICIPANT.GENDER)
         year_of_birth = record.get(CONCEPT.PARTICIPANT.YEAR_OF_BIRTH)
-        #print(f">>> {get_target_id_from_record}")
 
         unique_id = get_target_id_from_record(BasicPatient, record)
         entity = {
