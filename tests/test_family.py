@@ -31,14 +31,15 @@ def test_specimen_details(study, transformed_dir):
 
             # We have a limited number of relationships of interest
             if relationship and proband_id != "":
-            	proband = patients[proband_id]
-            	parents = proband.parents()
-            	if relationship == constants.RELATIONSHIP.MOTHER:
-            		parent = parents['MTH']
-            		assert subject_id == parent.subject_id, "Verify that the mother's ID matches"
-            	elif relationship == constants.RELATIONSHIP.FATHER:
-            		parent = parents['FTH']
-            		assert subject_id == parent.subject_id, "Verify that the father's ID matches"
+                proband = patients[proband_id]
+                parents = proband.parents()
+
+                if relationship == constants.RELATIONSHIP.MOTHER:
+                    parent = parents['MTH']
+                    assert subject_id == parent.subject_id, "Verify that the mother's ID matches"
+                elif relationship == constants.RELATIONSHIP.FATHER:
+                    parent = parents['FTH']
+                    assert subject_id == parent.subject_id, "Verify that the father's ID matches"
 
 
             # So, to get mom or dad (currently, the only ones we support at this time) you 

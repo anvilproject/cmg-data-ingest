@@ -49,10 +49,7 @@ def test_variant_details(config, study, transformed_dir):
             specimen = specimens[specimen_id]
 
             variants = Variant.VariantsBySpecimen(specimen.id, host)
-            id = f"{study.id}|{specimen_id}|{subject_id}|{variant_id}"
-
-            print(f"The Specimen ID {specimen.id} -- {len(variants)} variants returned")
-            #print(f"The variant ID {variant.id}")
+            id = f"{study.title}|{specimen_id}|{subject_id}|{variant_id}"
 
             assert(id in variants)
             variant = variants[id]
@@ -103,17 +100,11 @@ def test_variant_details(config, study, transformed_dir):
             reports = VariantReport.VariantReportsBySubject(patient.id, host)
 
             report_ids = set()
-            print(reports)
-
-            for rep in reports:
-                print(rep.id)
 
             if len(variant_refs[patient.id]) > 0:
                 for var in reports[0].result:
                     report_ids.add(f"Observation/{var.id}")
 
                 assert len(reports)==1
-                print(report_ids)
-                print(variant_refs[patient.id])
                 assert report_ids == variant_refs[patient.id]
 
