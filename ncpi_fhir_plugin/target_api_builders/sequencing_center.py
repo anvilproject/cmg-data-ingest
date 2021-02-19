@@ -40,7 +40,7 @@ class SequencingCenter(TargetBase):
 
         entity = {
             "resourceType": SequencingCenter.resource_type,
-            "id": make_identifier(seq_center),
+            "id": get_target_id_from_record(SequencingCenter, record), #make_identifier(seq_center),
             "meta": {
                 "profile": [
                     "http://hl7.org/fhir/StructureDefinition/Organization"
