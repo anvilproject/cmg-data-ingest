@@ -24,7 +24,7 @@ class SequencingCenter(TargetBase):
     @classmethod
     def get_key_components(cls, record, get_target_id_from_record):
         # These are required for the variant
-        assert None is not record[CONCEPT.SEQUENCING.CENTER.ID] and record[CONCEPT.SEQUENCING.CENTER.ID] != ""
+        assert None is not record.get(CONCEPT.SEQUENCING.CENTER.ID) and record[CONCEPT.SEQUENCING.CENTER.ID] != ""
 
         return {
             "identifier":  join(

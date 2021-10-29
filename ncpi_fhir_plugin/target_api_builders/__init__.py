@@ -2,17 +2,69 @@ from fhir_walk.fhir_host import FhirHost
 from fhirwood.identifier import Identifier
 from pprint import pformat
 from requests import RequestException
+from ncpi_fhir_plugin import get_fhir_server
 import sys
 import pdb 
 from colorama import init,Fore,Back,Style
 init()
 
+
+
 clients = {}
 def submit(host, entity_class, body):
+    fhir_server = get_fhir_server()
+    clients[host] = clients.get(host) or fhir_server.client()
+
+    # drop empty fields
+    body = {k: v for k, v in body.items() if v not in (None, [], {})}
+
+    headers = {}
+    verb = "POST"
+    api_path = f"{host}/{entity_class.resource_type}"
+    if "id" in body:
+        verb = "PUT"
+        api_path = f"{api_path}/{body['id']}"
+
+    if verb == "PATCH":
+        # If we start trying to patch, then we need to look at making
+        # sure the default content type doesn't clobber this one
+        headers["Content-Type"] = cheaders["Content-Type"].replace(
+            "application/fhir", "application/json-patch"
+        )
+    #pdb.set_trace()
+    success, result = fhir_server.send_request(
+        verb, api_path, body=body, headers=headers
+    )
+
+    if (
+        (not success)
+        and (verb == "PUT")
+        and (
+            "no resource with this ID exists"
+            in result.get("response", {})
+            .get("issue", [{}])[0]
+            .get("diagnostics", "")
+        )
+    ):
+        verb = "POST"
+        api_path = f"{host}/{entity_class.resource_type}"
+        success, result = fhir_server.send_request(
+            verb, api_path, body=body, headers=headers
+        )
+
+    if success:
+        return result["response"]["id"]
+    else:
+        print(pformat(body))
+        raise RequestException(
+            f"Sent {verb} request to {api_path}:\n{pformat(body)}"
+            f"\nGot:\n{pformat(result)}"
+        )
+def submit_(host, entity_class, body):
     global fhir_server
 
     # default to...dev environment
-    fhir_server = FhirHost.host()
+    fhir_server = get_fhir_server()   #FhirHost.host()
 
     clients[host] = clients.get(host) or fhir_server.client()
 
@@ -37,6 +89,7 @@ def submit(host, entity_class, body):
     if fhir_server.google_identity:
         cheaders['Authorization'] = fhir_server.get_google_identity()
 
+    pdb.set_trace()
     success, result = clients[host].send_request(
         verb, api_path, json=body, headers=cheaders
     )
@@ -111,7 +164,7 @@ class TargetBase:
         host = host.strip("/")
         endpoint = cls.resource_type.strip("/")
 
-        fhir_server = FhirHost.host()
+        fhir_server = get_fhir_server()   #FhirHost.host()
 
         url = f"{endpoint}?identifier={cls.identifier_system}|{key_components['identifier']}"
         #pdb.set_trace()
@@ -123,7 +176,7 @@ class TargetBase:
             if 'resource' in entity:
                 id = entity['resource']['id']
                 id_list.add(id)
-        return id_list
+        return list(id_list)
 
     @classmethod
     def submit(cls, host, body):

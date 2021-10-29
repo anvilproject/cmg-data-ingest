@@ -8,7 +8,7 @@ of tabular participant data.
 from ncpi_fhir_plugin.common import constants, CONCEPT
 from ncpi_fhir_plugin.shared import join
 from ncpi_fhir_plugin.target_api_builders import TargetBase
-
+from pprint import pformat
 import pdb
 
 # https://hl7.org/fhir/us/core/ValueSet-omb-ethnicity-category.html
@@ -154,6 +154,7 @@ class Patient(TargetBase):
     def get_key_components(cls, record, get_target_id_from_record):
         # These are required for the variant
         assert None is not record[CONCEPT.PARTICIPANT.ID]
+        assert None is not record[CONCEPT.STUDY.NAME]
 
         return {
             "identifier":  join(
@@ -170,7 +171,9 @@ class Patient(TargetBase):
         participant_id = record.get(CONCEPT.PARTICIPANT.ID)
         ethnicity = record.get(CONCEPT.PARTICIPANT.ETHNICITY)
         race = record.get(CONCEPT.PARTICIPANT.RACE)
-        ancestry = race + ":" + record.get(CONCEPT.PARTICIPANT.ANCESTRY_DETAIL)
+        ancestry = race
+        if CONCEPT.PARTICIPANT.ANCESTRY_DETAIL in record:
+            ancestry = race + ":" + record.get(CONCEPT.PARTICIPANT.ANCESTRY_DETAIL)
         species = record.get(CONCEPT.PARTICIPANT.SPECIES)
         gender = record.get(CONCEPT.PARTICIPANT.GENDER)
         dbgap_study_id = record.get(CONCEPT.DBGAP_STUDY_ID)
@@ -221,15 +224,17 @@ class Patient(TargetBase):
 
         if race:
             if omb_race_category.get(race):
-                entity.setdefault("extension", []).append(
-                    {
-                        "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race",
-                        "extension": [
-                            omb_race_category[race],
-                            {"url": "text", "valueString": ancestry},
-                        ],
-                    }
-                )
+                race_ext = {
+                    "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race",
+                    "extension": []
+                }
+
+                for race_cmp in race.split("|"):
+                    race_ext['extension'].append(omb_race_category[race_cmp])
+
+                race_ext['extension'].append({"url": "text", "valueString": ancestry})
+
+                entity.setdefault("extension", []).append(race_ext)
 
         if species:
             if species_dict.get(species):
@@ -239,28 +244,4 @@ class Patient(TargetBase):
             if administrative_gender.get(gender):
                 entity["gender"] = administrative_gender[gender]
 
-        if age_at_last_observation:
-            # For now, we'll just use float, but we could switch over to 
-            # months if there is a good reason.
-            try:
-                value = float(age_at_last_observation)
-                code = "a"
-                display = "years"
-            except:
-                display = "months"
-                code = "mo"
-                value = 12 * float(age_at_last_observation)
-
-            entity.setdefault("extension", []).append(
-                {
-                    "url": "http://fhir.ncpi-project-forge.io/StructureDefinition/age-at-event",
-                    "valueAge": {
-                        "value": value,
-                        "unit": code,
-                        "system": "http://unitsofmeasure.org",
-                        "code": display,
-                    },
-                }
-            )
-            
         return entity

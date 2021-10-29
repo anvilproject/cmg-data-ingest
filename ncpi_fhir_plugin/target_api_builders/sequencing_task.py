@@ -30,11 +30,11 @@ class SequencingTask(TargetBase):
 
     @classmethod
     def get_key_components(cls, record, get_target_id_from_record):
-        assert None is not record[CONCEPT.SEQUENCING.ID]
+        assert None is not record.get(CONCEPT.SEQUENCING.ID) and record.get(CONCEPT.SEQUENCING.ID).strip() != ""
 
         # I think it's safe to say that we'll need a DRS URI at this point
         # we may switch to an alternate approach at a later date, though
-        assert None is not record[CONCEPT.SEQUENCING.DRS_URI]
+        assert None is not record.get(CONCEPT.SEQUENCING.DRS_URI)
 
         return {
             "identifier":  join(
@@ -65,7 +65,8 @@ class SequencingTask(TargetBase):
 
         seq_file_id = get_target_id_from_record(SequencingFile, record)
 
-        #pdb.set_trace()
+        if seq_center.strip() == "":
+            pdb.set_trace()
         if record[CONCEPT.SEQUENCING.DRS_URI].strip() == "":
             seq_file_id = get_target_id_from_record(SequencingFileNoDrs, record)
 

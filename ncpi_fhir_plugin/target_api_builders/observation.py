@@ -1,5 +1,5 @@
 """
-Measurements - These represent clinical observations
+Observation - These represent basic observations
 """
 
 
@@ -12,23 +12,24 @@ from ncpi_fhir_plugin.target_api_builders.encounter import Encounter
 
 import pdb
 
-class Measurement(TargetBase):
-    class_name = "measurement"
+class Observation(TargetBase):
+    class_name = "observation"
     resource_type = "Observation"
     target_id_concept = CONCEPT.STUDY.PROVIDER.SUBJECT.TARGET_SERVICE_ID
 
     @classmethod
     def get_key_components(cls, record, get_target_id_from_record):
+        #pdb.set_trace()
         # These are required for the variant
         assert None is not record[CONCEPT.PARTICIPANT.ID]
         assert None is not record[CONCEPT.STUDY.NAME]
+        assert None is not record[CONCEPT.PARTICIPANT.OBSERVATION.ID]
 
         return {
             "identifier":  join(
                 record[CONCEPT.STUDY.NAME],
                 record[CONCEPT.PARTICIPANT.ID],
-                record[CONCEPT.PARTICIPANT.VISIT_NUMBER],
-                record[CONCEPT.PARTICIPANT.MEASUREMENT.CODE]
+                record[CONCEPT.PARTICIPANT.OBSERVATION.ID]
             )
         }
 
@@ -37,85 +38,65 @@ class Measurement(TargetBase):
         key = cls.get_key_components(record, get_target_id_from_record)['identifier']
         study_name = record[CONCEPT.STUDY.NAME]
         cls.report(study_name)
-        visit_number = record[CONCEPT.PARTICIPANT.VISIT_NUMBER]
-        measurement = record[CONCEPT.PARTICIPANT.MEASUREMENT.ID]
-        units = record[CONCEPT.PARTICIPANT.MEASUREMENT.UNITS]
-        units_system = record[CONCEPT.PARTICIPANT.MEASUREMENT.UNITS_SYSTEM]
-        measurement_code = record[CONCEPT.PARTICIPANT.MEASUREMENT.CODE]
-        measurement_name = record[CONCEPT.PARTICIPANT.MEASUREMENT.NAME]
-        derived_from = record[CONCEPT.PARTICIPANT.MEASUREMENT.DERIVED_FROM]
-        measurement_desc = record.get(CONCEPT.PARTICIPANT.MEASUREMENT.DESC)
+        observation_id = record.get(CONCEPT.PARTICIPANT.OBSERVATION.ID)
+        observation_name = record.get(CONCEPT.PARTICIPANT.OBSERVATION.NAME)
+        observation_system = record.get(CONCEPT.PARTICIPANT.OBSERVATION.SYSTEM)
+        observation_desc = record.get(CONCEPT.PARTICIPANT.OBSERVATION.DESCRIPTION)
+        observation_value = record.get(CONCEPT.PARTICIPANT.OBSERVATION.VALUE)
+        #visit_id = record.get(CONCEPT.PARTICIPANT.VISIT_NUMBER)
+        derived_from = record.get(CONCEPT.PARTICIPANT.MEASUREMENT.DERIVED_FROM)
 
         patient_id=get_target_id_from_record(Patient, record)
         if patient_id is None:
             pdb.set_trace()
 
-        if measurement == 'NA':
-            print("We have encountered NA for a measurement value. This should be mapped to None or whatever is suitable for the consortium preferences.")
-            pdb.set_trace()
-        if measurement_desc is None or measurement_desc.strip() == '':
-            measurement_desc = measurement_name
+        if observation_desc is None or observation_desc.strip() == '':
+            observation_desc = observation_name
 
-        age_at_obs = record[CONCEPT.PARTICIPANT.AGE_AT_EVENT]
-
-        # We can append codes other than LOINC 
-        alt_codes = record[CONCEPT.PARTICIPANT.MEASUREMENT.ALT_CODES]
+        age_at_obs = record.get(CONCEPT.PARTICIPANT.AGE_AT_EVENT)
 
         entity = {
-            "resourceType": Measurement.resource_type,
-            "id": get_target_id_from_record(Measurement, record),
+            "resourceType": Observation.resource_type,
+            "id": get_target_id_from_record(Observation, record),
             "meta": {
                 "profile": [
-                     f"http://hl7.org/fhir/StructureDefinition/{Measurement.resource_type}"
+                     f"http://hl7.org/fhir/StructureDefinition/{Observation.resource_type}"
                 ]
             },
             "identifier": [
                 {
                     "system" : f"{cls.identifier_system}",
-                    "value": key
+                    "value": key,
                 }
             ],
             "status": "final",
             "code":     {
-                "coding": [
-                    {
-                        "system": "http://loinc.org",
-                        "code": measurement_code,
-                        "display": measurement_name
-                    }
-                ],
-                "text": f"{measurement_desc}"
+                "text": f"{observation_desc}"
             },
             "subject": {
                 "reference": f"Patient/{get_target_id_from_record(Patient, record)}"
             },
 
-            "valueQuantity": {
-                "value" : float(measurement),
-                "unit" : units,
-                "system": units_system
-            }
         }
 
+        if observation_value is not None:
+            entity['valueString'] = observation_value
 
-        for code in alt_codes.split("|"):
-            system, code = code.split("^^")
-
-            entity['code']['coding'].append(
+        # We may actually have a true coding to work with...
+        if observation_system is not None and observation_system.strip() != "":
+            entity['code']['coding'] = [
                 {
-                    "system": system,
-                    "code": code,
-                    "display": measurement_name
+                    "system": observation_system,
+                    "code": observation_id,
+                    "display": observation_name
                 }
-            )
+            ]
 
-        if visit_number:
-            encid = get_target_id_from_record(Encounter, record)
-            if encid is None:
-                pdb.set_trace()
+        """if visit_id:
             entity['encounter'] = {
-                "reference": f"Encounter/{encid}"
+                "reference": f"Encounter/{get_target_id_from_record(Encounter, record)}"
             }
+        """
 
         """
         relationship has to be from: http://hl7.org/fhir/R4/valueset-action-relationship-type.html
@@ -128,7 +109,7 @@ class Measurement(TargetBase):
                             "extension": [{
                                     "url": "target",
                                     "valueReference": {
-                                        "reference": f"Patient/{get_target_id_from_record(Patient, record)}"
+                                        "reference": f"Patient/{get_target_id_from_record(BasicPatient, record)}"
                                     }
                                 }, {
                                     "url": "targetPath",
@@ -140,28 +121,15 @@ class Measurement(TargetBase):
                                     "url": "offset",
                                     "valueDuration": {
                                         "value": float(age_at_obs),
-                                        "unit": "years",
+                                        "unit": "a",
                                         "system": "http://unitsofmeasure.org",
-                                        "code": "a"
+                                        "code": "years"
                                 }
 
                             }]
                         }
                     ]
                 }
-            """
-            entity.setdefault("extension", []).append(
-                {
-                    "url": "http://fhir.ncpi-project-forge.io/StructureDefinition/age-at-event",
-                    "valueAge": {
-                        "value": float(age_at_obs),
-                        "unit": "a",
-                        "system": "http://unitsofmeasure.org",
-                        "code": "years",
-                    }
-                }
-            )
-            """
 
         other_ids = []
 

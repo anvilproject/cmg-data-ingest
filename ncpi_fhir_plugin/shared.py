@@ -2,7 +2,7 @@ import re
 
 
 def join(*args):
-    return "|".join(str(a) for a in args)
+    return "-".join(str(a) for a in args)
 
 
 # http://hl7.org/fhir/R4/datatypes.html#id

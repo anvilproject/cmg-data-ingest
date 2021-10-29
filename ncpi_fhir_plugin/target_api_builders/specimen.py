@@ -37,7 +37,8 @@ class Specimen(TargetBase):
 
         return {
             "identifier":  join(
-                record[CONCEPT.STUDY.NAME], record[CONCEPT.BIOSPECIMEN.ID]
+                record[CONCEPT.STUDY.NAME], 
+                record[CONCEPT.BIOSPECIMEN.ID]
             )
         }
 
@@ -99,6 +100,32 @@ class Specimen(TargetBase):
                     },
                 }
             )
+            entity.setdefault("extension", []).append(
+                {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-relativeDateTime",
+                    "extension": [{
+                            "url": "target",
+                            "valueReference": {
+                                "reference": f"Patient/{get_target_id_from_record(BasicPatient, record)}"
+                            }
+                        }, {
+                            "url": "targetPath",
+                            "valueString": "birthDate"
+                        }, {
+                            "url": "relationship",
+                            "valueCode":  "after" 
+                        }, {
+                            "url": "offset",
+                            "valueDuration": {
+                                "value": int(event_age_days),
+                                "unit": "d",
+                                "system": "http://unitsofmeasure.org",
+                                "code": "days"
+                        }
+
+                    }]
+                }
+            )
 
         if sample_source_name:
             entity['collection'] = {
@@ -113,5 +140,4 @@ class Specimen(TargetBase):
                     "text": sample_source_name
                 }
             }
-
         return entity

@@ -67,7 +67,7 @@ class PatientRelation(TargetBase):
             "id": get_target_id_from_record(PatientRelation, record),
             "meta": {
                 "profile": [
-                    "http://fhir.ncpi-project-forge.io/StructureDefinition/ncpi-family-relationship"
+                    f"{constants.NCPI_DOMAIN}/ncpi-fhir-ig/StructureDefinition/family-relationship"
                 ]
             },
             "identifier": [
@@ -81,10 +81,10 @@ class PatientRelation(TargetBase):
                   {
                     "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
                     "code": "FAMMEMB",
-                    "display": "Family"
+                    "display": "family member"
                   }
                 ],
-                "text": "Family relationship"
+                "text": "Family Relationship"
             },
             "status": "final",
             "subject" : {'reference': f"{Patient.resource_type}/{get_target_id_from_record(Patient, record)}"},

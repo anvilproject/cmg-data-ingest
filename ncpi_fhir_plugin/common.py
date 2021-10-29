@@ -12,6 +12,8 @@ from kf_lib_data_ingest.common.concept_schema import (
     compile_schema
 )
 
+constants.NCPI_DOMAIN = "https://ncpi-fhir.github.io"
+
 # For now, I'm going to just append the values to CONCEPT and constants that
 # I want to work with. We'll figure out the proper way to add these into 
 # the actual library at a later date. 
@@ -27,6 +29,7 @@ CONCEPT.PARTICIPANT.YEAR_OF_BIRTH = 'PARTICIPANT|YEAR_OF_BIRTH'
 CONCEPT.PARTICIPANT.RELATIONSHIP_TO_PROBAND_RAW = 'PARTICIPANT|RELATIONSHIP_TO_PROBAND_RAW'
 CONCEPT.DIAGNOSIS.DESCRIPTION = 'DIAGNOSIS|DESCRIPTION'
 CONCEPT.DIAGNOSIS.DISEASE_ID = 'DIAGNOSIS|DISEASE_ID'
+CONCEPT.DIAGNOSIS.DISEASE_CODE = 'DIAGNOSIS|DISEASE_CODE'
 CONCEPT.DIAGNOSIS.DISEASE_ALTERNATE_IDS = 'DIAGNOSIS|DISEASE_ALTERNATE_IDS'
 CONCEPT.DIAGNOSIS.AGE_ONSET = 'DIAGNOSIS|AGE_ONSET'
 CONCEPT.DIAGNOSIS.AFFECTED_STATUS = 'DIAGNOSIS|AFFECTED_STATUS'
@@ -52,8 +55,17 @@ class MEASUREMENT(PropertyMixin):
     DERIVED_FROM = None
     ALT_CODES = None
     UNITS = None
+    UNITS_SYSTEM = None
+    DESC = None
 
 CONCEPT.PARTICIPANT.MEASUREMENT = MEASUREMENT 
+
+class OBSERVATION(PropertyMixin):
+    NAME = None
+    SYSTEM = None
+    DESCRIPTION = None
+    VALUE = None
+CONCEPT.PARTICIPANT.OBSERVATION = OBSERVATION
 
 class SampleProvider(PropertyMixin):
     NAME = None
@@ -61,7 +73,15 @@ class SampleProvider(PropertyMixin):
         CONSENT = None
         STATUS = None
 
+class STUDY_GROUP(PropertyMixin):
+    NAME = None
+    URL = None
+    CONSENT_NAME = None
+
+CONCEPT.STUDY.GROUP = STUDY_GROUP
 CONCEPT.STUDY.PROVIDER = SampleProvider
+CONCEPT.STUDY.TITLE = "STUDY|TITLE"
+
 class TissueStatus(PropertyMixin):
     NAME = "BIOSPECIMEN|TISSUE|AFFECTED_STATUS"
 
@@ -69,6 +89,7 @@ class AffectedStatus(PropertyMixin):
     AFFECTED = "Affected"
     UNAFFECTED = "Unaffected"
     POSSIBLY_AFFECTED = "Possibly affected"
+    UNKNOWN = "Reported unknown"
 
 CONCEPT.BIOSPECIMEN.TISSUE_AFFECTED_STATUS = TissueStatus   
 CONCEPT.BIOSPECIMEN.TISSUE_TYPE_NAME = "BIOSPECIMEN|TISSUE_TYPE|NAME"

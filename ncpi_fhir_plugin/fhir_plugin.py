@@ -21,6 +21,8 @@ from ncpi_fhir_plugin.target_api_builders.ncpi_patient import Patient
 from ncpi_fhir_plugin.target_api_builders.basic_patient import BasicPatient
 from ncpi_fhir_plugin.target_api_builders.research_subject import ResearchSubject
 from ncpi_fhir_plugin.target_api_builders.research_study import ResearchStudy
+from ncpi_fhir_plugin.target_api_builders.consent import Consent
+from ncpi_fhir_plugin.target_api_builders.group import Group
 from ncpi_fhir_plugin.target_api_builders.patient_relationship import PatientRelation
 from ncpi_fhir_plugin.target_api_builders.specimen import Specimen 
 from ncpi_fhir_plugin.target_api_builders.disease import Disease
@@ -35,6 +37,10 @@ from ncpi_fhir_plugin.target_api_builders.discovery_variant import DiscoveryVari
 from ncpi_fhir_plugin.target_api_builders.discovery_implication import DiscoveryImplication 
 from ncpi_fhir_plugin.target_api_builders.discovery_report import DiscoveryReport 
 from ncpi_fhir_plugin.target_api_builders.measurement import Measurement
+from ncpi_fhir_plugin.target_api_builders.encounter import Encounter
+from ncpi_fhir_plugin.target_api_builders.service_request import ServiceRequest
+from ncpi_fhir_plugin.target_api_builders.condition import Condition
+from ncpi_fhir_plugin.target_api_builders.observation import Observation
 
 from ncpi_fhir_plugin import common
 
@@ -45,12 +51,16 @@ import traceback
 all_targets = [
     Patient,
     BasicPatient,
-    PatientRelation,
+    Consent,
+    Group,
     ResearchStudy,
     ResearchSubject,
+    PatientRelation,
     SequencingCenter,
     Specimen,
     Disease,
+    Encounter,
+    ServiceRequest,
     HumanPhenotype,
     TissueAffectedStatus,
     SequencingFile,
@@ -60,8 +70,9 @@ all_targets = [
     DiscoveryVariant,
     DiscoveryImplication,
     DiscoveryReport,
-    Measurement
+    Measurement,
+    Observation,
+    Condition
 ]
-#print(inspect.getsource(Patient.build_entity))
 
 LOADER_VERSION = 2
