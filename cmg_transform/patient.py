@@ -1,13 +1,12 @@
 
 from ncpi_fhir_plugin.common import CONCEPT, constants, GENDERFICATION
 from cmg_transform import Transform
-from term_lookup import pull_details, write_cache
+from cmg_transform.tools.term_lookup import pull_details, write_cache
 
 import sys
 
 class Patient:
     def __init__(self, row, family_lkup, proband_relationships):
-        #print(row.keys())
         self.id = Transform.CleanSubjectId(row['subject_id'])  # Transform.CleanSubjectId(row['subject_id'])
         self.project_id = Transform.ExtractVar(row, 'project_id')
         self.fam_id = Transform.ExtractVar(row, 'family_id')
@@ -31,9 +30,6 @@ class Patient:
         try:
             # I'm hopeful that everything should be in constantsANTS.RELATIONSHIP
             self.proband_relationship = Transform.ExtractVar(row, 'proband_relationship', constants.RELATIONSHIP, True)
-            if self.proband_relationship == '' and row['proband_relationship'] != "":
-                print(f"'{row['proband_relationship']}'' -- '{Transform.GetValue(row, 'proband_relationship')}'")
-
             self.is_proband = self.proband_relationship == constants.RELATIONSHIP.PROBAND
 
             self.proband_relationship_raw = Transform.GetValue(row, 'proband_relationship')
@@ -71,7 +67,6 @@ class Patient:
         # Let's assign gendered family member relationships where it makes sense
         if self.sex in GENDERFICATION:
             if self.proband_relationship in GENDERFICATION[self.sex]:
-                #print(f"--> {self.proband_relationship} {GENDERFICATION[self.sex][self.proband_relationship]}")
                 self.proband_relationship = GENDERFICATION[self.sex][self.proband_relationship]
 
 

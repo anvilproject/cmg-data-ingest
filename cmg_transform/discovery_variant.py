@@ -1,19 +1,19 @@
 import csv
 from ncpi_fhir_plugin.common import CONCEPT, constants
 from cmg_transform import Transform
-from genenames import Gene
-from variant_details import get_variant
+from cmg_transform.tools.genenames import Gene
+from cmg_transform.tools.variant_details import get_variant
 
 from cmg_transform.sequencing import Sequencing
-
+import sys
+import pdb
 class DiscoveryVariant:
     genome_builds = {
         'hs37d5': 'GRCh37',
-        'GRCh38DH': 'GRCh38'
+        'GRCh38DH': 'GRCh38',
+        'GRCh37': 'GRCh37'
     }
     def __init__(self, row):
-        if "subject_id" not in row:
-            print(sorted(row.keys()))
         self.id = Transform.CleanSubjectId(row['subject_id']) # Transform.CleanSubjectId(row['subject_id'])
         self.sample_id = row['sample_id']
         self.gene = Transform.ExtractVar(row, 'gene')
@@ -31,7 +31,11 @@ class DiscoveryVariant:
             self.ref_seq = Transform.ExtractVar(row, 'variant_genome_build', constants.DISCOVERY.VARIANT.GENOME_BUILD, default_to_empty=True)
         else:
             if self.sample_id in Sequencing.genome_builds:
-                self.ref_seq = DiscoveryVariant.genome_builds[Sequencing.genome_builds[self.sample_id]]
+                try:
+                    self.ref_seq = DiscoveryVariant.genome_builds[Sequencing.genome_builds[self.sample_id]]
+                except:
+                    print(f"Well, we can't seem to find the column, {Sequencing.genome_builds[self.sample_id]}")
+                    pdb.set_trace()
             else:
                 self.ref_seq = None
         self.chrom = Transform.ExtractVar(row, 'chrom', constants.DISCOVERY.VARIANT.CHROMOSOME, default_to_empty=True)

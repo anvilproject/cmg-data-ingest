@@ -12,6 +12,13 @@ import pdb
 from colorama import init,Fore,Back,Style
 init()
 
+class InvalidID(Exception):
+    def __init__(self, file_type, colname, id):
+        super().__init__(f"Invalid ID:  {file_type}:{colname}={id}")
+        self.file_type = file_type
+        self.colname = colname
+        self.id = id
+
 def ParseDate(value):
     # 20160525  -- May need to test for "-" and "/" or other characters
     if len(value.strip()) == 8:
@@ -55,7 +62,8 @@ class Transform:
             '': None
         },
         constants.ETHNICITY : {
-            "Unknown": constants.COMMON.UNKNOWN
+            "Unknown": constants.COMMON.UNKNOWN,
+            'Not Reported': constants.COMMON.NOT_REPORTED,
         },
         constants.GENDER : {
             "Intersex": constants.COMMON.OTHER,
@@ -84,6 +92,9 @@ class Transform:
 
     # The transform is a text substitution. SUBSTR == YES
     _data_transform = defaultdict(dict)
+
+    # _invalid_ids['file-role']['field_name'].add(id_to_ignore)
+    _invalid_ids = defaultdict(lambda: defaultdict(set))
 
     _raw_chroms = [str(x) for x in range(1,23)] + ['X', 'Y']
 
@@ -178,6 +189,14 @@ class Transform:
         # For now, just strip the character data from the strings
         return var
 
+    def LoadInvalidIDs(filename):
+        if filename is not None:
+            with open(filename, 'rt') as f:
+                reader = DictReader(f, delimiter=',', quotechar='"')
+
+                for line in reader:
+                    Transform._invalid_ids[line['FILE_TYPE']][line['FIELD_NAME']].add(line['INVALID_ID'])
+
     def LoadFieldMap(filename):
         if filename is not None:
             with open(filename, 'rt') as f:
@@ -197,8 +216,18 @@ class Transform:
                     else:
                         Transform._data_map[line['FIELD_NAME']][line['ALTERNATIVE']] = line['EXPECTED']
 
+    def CheckForBadIDs(line):
+        if Transform._cur_filename in Transform._invalid_ids:
+            for col in Transform._invalid_ids[Transform._cur_filename]:
+                if line[col] in Transform._invalid_ids[Transform._cur_filename][col]:
+                    raise InvalidID(Transform._cur_filename, 
+                                    col, 
+                                    line[col])
 
-    def GetReader(csv_file, delimiter=','):
+    def GetReader(csv_file, file_type='', delimiter=','):
+        if file_type.strip() != "":
+            Transform._cur_filename = file_type
+
         reader = csv.DictReader(csv_file, delimiter=delimiter, quotechar='"')
 
         fieldnames = []

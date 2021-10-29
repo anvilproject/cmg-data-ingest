@@ -1,8 +1,8 @@
 import csv
 from ncpi_fhir_plugin.common import CONCEPT, constants
 from cmg_transform import Transform
-from term_lookup import pull_details, write_cache
-import term_lookup
+from cmg_transform.tools.term_lookup import pull_details, write_cache
+import cmg_transform.tools.term_lookup as term_lookup
 
 class Disease:
     def __init__(self, row, family_lkup):
@@ -16,7 +16,6 @@ class Disease:
         self.alternate_diseases = []
         self.alternate_disease_names = ""
 
-
         self.disease_description = Transform.ExtractVar(row, 'disease_description').replace("\n", ' ')
         self.disease_name = self.disease_description
         self.disease_system = None
@@ -24,9 +23,9 @@ class Disease:
 
         self.get_disease_details(row)
         
-        self.hpo_present = Transform.ExtractVar(row, 'hpo_present').split("|")
-        self.hpo_absent = Transform.ExtractVar(row, 'hpo_absent').split("|")
-        self.affected_status = Transform.ExtractVar(row, 'affected_status')
+        self.hpo_present = list(set([x.strip() for x in Transform.ExtractVar(row, 'hpo_present').split("|")]))
+        self.hpo_absent = list(set([x.strip() for x in Transform.ExtractVar(row, 'hpo_absent').split("|")]))
+        self.affected_status = Transform.ExtractVar(row, 'affected_status', constants.AFFECTED_STATUS)
         self.age_of_onset = Transform.ExtractVar(row, 'age_of_onset')
 
     def get_disease_details(self, row):
@@ -64,9 +63,11 @@ class Disease:
             CONCEPT.FAMILY.ID,
             CONCEPT.PARTICIPANT.ID,
             CONCEPT.STUDY.NAME,
-            CONCEPT.PHENOTYPE.HPO_ID,
-            CONCEPT.PHENOTYPE.NAME,
-            CONCEPT.PHENOTYPE.OBSERVED])
+            CONCEPT.PHENOTYPE.ID,
+            CONCEPT.DIAGNOSIS.NAME,
+            CONCEPT.PHENOTYPE.OBSERVED,
+            CONCEPT.DIAGNOSIS.SYSTEM,
+            CONCEPT.DIAGNOSIS.DISEASE_CODE])
 
     def hpo_writerow(self, study_name, writer):
         for hpo in self.hpo_present:
@@ -79,7 +80,9 @@ class Disease:
                         study_name,
                         hpo,
                         details.name,
-                        constants.PHENOTYPE.OBSERVED.PRESENT
+                        constants.PHENOTYPE.OBSERVED.PRESENT,
+                        "http://purl.obolibrary.org/obo/hp.owl",
+                        hpo
                     ])
                 else:
                     print(f"Unrecognized HPO Term: {hpo}")
@@ -93,7 +96,9 @@ class Disease:
                         study_name,
                         hpo,
                         details.name,
-                        constants.PHENOTYPE.OBSERVED.ABSENT
+                        constants.PHENOTYPE.OBSERVED.ABSENT,
+                        "http://purl.obolibrary.org/obo/hp.owl",
+                        hpo
                     ])
                 else:
                     print(f"Unrecognized HPO Term: {hpo}")
@@ -104,12 +109,12 @@ class Disease:
             CONCEPT.FAMILY.ID,
             CONCEPT.PARTICIPANT.ID,
             CONCEPT.STUDY.NAME,
-            CONCEPT.DIAGNOSIS.DISEASE_ID,
+            CONCEPT.DIAGNOSIS.DISEASE_CODE,
             CONCEPT.DIAGNOSIS.DESCRIPTION,
             CONCEPT.DIAGNOSIS.SYSTEM,
             CONCEPT.DIAGNOSIS.NAME,
             CONCEPT.DIAGNOSIS.AGE_ONSET,
-            CONCEPT.DIAGNOSIS.AFFECTED_STATUS,
+            CONCEPT.PHENOTYPE.OBSERVED,
             CONCEPT.DIAGNOSIS.DISEASE_ALTERNATE_IDS,
             CONCEPT.PHENOTYPE.DESCRIPTION
             ])

@@ -1,7 +1,10 @@
 
 from ncpi_fhir_plugin.common import CONCEPT, constants
 from cmg_transform import Transform, ParseDate
-from term_lookup import pull_details, write_cache
+from cmg_transform.tools.term_lookup import pull_details, write_cache
+
+import pdb
+import sys
 
 class Sequencing:
     file_cols = ['seq_filename',
@@ -23,10 +26,16 @@ class Sequencing:
             else:
                 print("No sample IDs nor cram_or_bam_path")
                 sys.exit(1)
-        try:
-            self.subject_id = Transform.CleanSubjectId(Transform.ExtractVar(row, 'subject_id')) 
-        except KeyError:
-            self.subject_id = subj_id[self.sample_id]
+
+        self.subject_id = Transform.CleanSubjectId(Transform.ExtractVar(row, 'subject_id')) 
+        if self.subject_id is None:
+            try:
+                self.subject_id = subj_id[self.sample_id]
+            except KeyError as err:
+                # For these cases, let's create a phony identifier so that we can load the data
+                # despite the lack of a valid sample ID
+                self.subject_id=f"{constants.NCPI_DOMAIN}/missing-identifier/sample/|{self.sample_id}"
+
         self.seq_filenames = []     
 
         for col in Sequencing.file_cols:

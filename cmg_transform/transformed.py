@@ -58,7 +58,6 @@ class Report:
             @classmethod
             def header(cls, writer):
                 writer.writerow(['Dataset', 'Filename', 'Colname', 'Total', '#Miss', '%Missing', 'Untransformed_Values'])
-                #print("""{dataset:20} {filename:12} {var:32} {total:6} {missing:6} {pct}""".format(dataset="Dataset", filename="Filename", var="var", total="Total", missing="#Miss", pct="%%Missing"))                
 
             def summary(self, writer, min_missing=10.0):
                 values = []
@@ -67,10 +66,8 @@ class Report:
                 missing_perc = float((self.missing * 100) / self.total)
                 if missing_perc > min_missing:
                     writer.writerow([dataset_name,self.var.table, self.var.name, self.total, self.missing, "%.4f" % missing_perc] + values)
-                #print("""{dataset:20} {var.table:12} {var.name:32} {total:6} {missing:6} {pct:.4f}""".format(dataset=dataset_name, var=self.var, total=self.total, missing=self.missing, pct=(float(self.missing * 100)/self.total)))
 
         summary_data = {}
-        #pdb.set_trace()
         base_qry = """SELECT 
                         variable_id, 
                         count(DISTINCT line_number)
