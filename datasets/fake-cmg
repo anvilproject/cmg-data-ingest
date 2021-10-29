@@ -1,0 +1,11 @@
+study_name: FAKE CMG
+study_title: Synthetic CMG Example
+study_id: phs12345
+dbgap_acc: phs12345.v1.p1
+consent-groups:
+    FRU:
+        sample: datasets/data/example-cmg/FakeData_CMG_Sample.tsv
+        family: datasets/data/example-cmg/FakeData_CMG_Family.tsv
+        subject: datasets/data/example-cmg/FakeData_CMG_Subject.tsv
+        discovery: datasets/data/example-cmg/FakeData_CMG_Discovery.tsv
+        sequencing: datasets/data/example-cmg/FakeData_CMG_Sequencing.tsv
